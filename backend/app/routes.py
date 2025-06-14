@@ -138,7 +138,8 @@
 
 
 # 3차
-from fastapi import APIRouter , Depends, HTTPException # 추가
+# status.HTTP_204_NO_CONTENT와 같은 HTTP 상태 코드를 사용하기 위해 FastAPI의 status 모듈을 불러온다.
+from fastapi import APIRouter , Depends, HTTPException, status 
 from sqlalchemy.orm import Session
 from typing import List
 from . import models, schemas, database
@@ -158,14 +159,22 @@ def get_posts(db: Session = Depends(get_db)):
     return db.query(models.Post).all()
 
 # 상세 조회 API 추가
-# URL의 post_id 값을 받아 DB에서 게시글 조회
-# 없으면 404 에러 반환
-# 있으면 해당 게시글 데이터를 JSON으로 반환
+# /posts/3 같은 상세 게시글 요청을 처리하는 GET 라우팅 경로
+# post_id는 URL 경로에서 자동ㅇ으로 추출되는 게시글의 ID이다.
+# response_model=schemas.Post는 응답 데이터가 Post 스키마 형식임을 명시(타이틀, 내용, 작성자, id 포함)
 @router.get("/posts/{post_id}", response_model=schemas.Post)
+# post_id: URL 경로에서 받은 게시글 ID를 int로 추론
+# db: Session = Depend(get_db): FastAPI가 get_db()를 실행해서 DB 세션을 이 함수에 주입
 def get_post(post_id: int, db: Session = Depends(get_db)):
+    # SQLAlchemy ORM을 통해 Post 테이블에서 id가 post_id인 게시글을 조회
+    # 결과가 없으면 None이 반환됨
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    # 해당 게시글이 없을 경우 404 에러 발생
+    # FastAPI는 자동으로 JOSN 에러 응답을 생성: {"detail":"Post not found"}
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
+    # 죄회된 게시글 객체를 그대로 반환
+    # FastAPI는 schemas.Post 기준으로 JSON 직렬화해 클라이언트에 응답
     return post
 
 
@@ -177,4 +186,30 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_post)
     return db_post
+
+# 삭제 API 추가
+# DELETE /posts/{post_id} 경로에 요청이 오면 아래 함수를 실행한다.
+# @router.delete: 해당 경로를 삭제용 HTTP 메서드로 설정한다.
+# status_code=204: 성공 시, 본문 없이 성공했다는 의미의 HTTP 상태 코드 204 no Content를 응답한다.
+@router.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+# 이 함수는 post_id와 db 세션을 입력받는다.
+# post_id: int: URL 경로의 게시글 ID를 정수형으로 받는다.
+# db: Session = Depends(get_db): Depends를 통해 SQLAlchemy 세션을 자동 주입받는다.
+def delete_post(post_id: int, db: Session = Depends(get_db)):
+    # Post 테이블에서 ID가 post_id인 게시글을 조회한다.
+    # 결과가 없으면 None이 반환된다.
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    # 해당 게시글이 존재하지 않을 경우
+    # 404 Not Found 오류를 발생시켜 클라이언트에게 게시글이 없다는 사실을 알린다.
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    # SQLAlchemy의 delete() 메서드로 해당 게시글을 삭제 대상에 등록한다.
+    # 이 시점에서는 아직 실제 DB에서는 삭제되지 않았다.
+    db.delete(post)
+    # 등록된 삭제 작업을 식제 데이터베이스에 적용한다.
+    # 게시글은 영구적으로 삭제된다.
+    db.commit()
+    # 204 No Content 상태 코드에 맞게, 아무 본문 없이 응답을 종료한다.
+    return
+
 
