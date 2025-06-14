@@ -1,4 +1,6 @@
 // src/pages/PostDetail.js
+/*
+// 1차
 // 사용자가 게시글을 클릭했을 때, 상세 내용을 보여주는 페이지 컴포넌트이다.
 // react-router-dom 에서 제공하는 useParams 훅을 가져온다.
 // URL에 포함된 파라미터 값을 가져오는 기능을 한다.
@@ -43,3 +45,32 @@ function PostDetail(){
 // PostDetail 컴포넌트를 외부에서도 사용할 수 있도록 export 한다.
 // App.js에서 <Route path="/post/:id" element={<PostDetail />}/>처럼 불러서 사용한다.
 export default PostDetail;
+*/
+
+import {useParams} from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import axios from 'axios';
+
+export default function PostDetail(){
+  const{id} = useParams();                
+  const[post, setPost] = useState(null);
+  const[error, setError] = useState(null);
+
+  useEffect(() => {
+    axios.get(`http://localhost:8000/posts/${id}`)
+    .then(response => setPost(response.data))
+    .catch(err => setError('해당 게시글을 불러올 수 없습니다.'));
+  }, [id]);
+
+  if (error) return <p>{error}</p>;
+  if (!post) return <p>⏳ 게시글을 불러오는 중...</p>
+
+  return (
+    <div>
+      <h2>{post.title}</h2>
+      <p><string>작성자:</string> {post.author}</p>
+      <hr />
+      <p>{post.content}</p>
+    </div>
+  )
+}

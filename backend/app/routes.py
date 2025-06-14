@@ -58,38 +58,94 @@
 # # /posts POST 요청: 새 게시글을 받아 리스트에 추가하고, 그 게시글을 반환
 
 
-# 2차
-# APIRouter: 라우팅 기능을 모듈 단위로 분리해서 사용할 수 있도록 해주는 FastAPI의 클래스이다.
-# main.py에서 include_router()를 사용해 전체 앱에 연결한다.
-# Depends: FastAPI의 의존성 주입(Dependency Injection)기능이다.
-# Depends(get_db)는 get_db()의 리턴값을 자동으로 함수 인자로 주입해준다.(여기서는 DB 세션).
-from fastapi import APIRouter , Depends
+# # 2차
+# # APIRouter: 라우팅 기능을 모듈 단위로 분리해서 사용할 수 있도록 해주는 FastAPI의 클래스이다.
+# # main.py에서 include_router()를 사용해 전체 앱에 연결한다.
+# # Depends: FastAPI의 의존성 주입(Dependency Injection)기능이다.
+# # Depends(get_db)는 get_db()의 리턴값을 자동으로 함수 인자로 주입해준다.(여기서는 DB 세션).
+# from fastapi import APIRouter , Depends
 
-# Session: SQLAlchemy의 데이터베이스 세션 클래스이다.
-# DB 연결을 통해 데이터를 읽고 쓰는 작업은 이 세션을 통해 이루어진다.
+# # Session: SQLAlchemy의 데이터베이스 세션 클래스이다.
+# # DB 연결을 통해 데이터를 읽고 쓰는 작업은 이 세션을 통해 이루어진다.
+# from sqlalchemy.orm import Session
+
+# # 타입 힌트에 사용되는 List를 가져온다.
+# # 예 :List[str]은 문자열로 구성된 리스트라는 의미이다.
+# # 이 코드에서는 직접 사용되지는 않았지만, 나중에 API 반환 타입에 List[Post]와 같이 쓸 수 있다.
+# from typing import List
+
+# # 현재 디렉토리(app/)에서 세 개의 모듈을 가져온다.
+# # models: SQLAlchemy ORM 모델(예: Post)
+# # schemas: Pydantic 스키마(요청 및 응답 데이터 구조)
+# # database: DB 연결 및 세션 설정을 포함하는 설정 파일
+# from . import models, schemas, database
+
+
+# # 라우터 객체를 생성한다.
+# # 여기에 .get(), .post() 등의 라우팅 데코레이터를 붙여 여러 API 엔드포인트를 정의할 수 있다.
+# # main.py에서 이 router를 앱에 연결한다: app.include_router(routes.router)
+# router = APIRouter()
+
+# # 이 함수는 DB 세션을 생성하고 반환(yield)하는 제너레이터이다.
+# # FastAPI는 이 함수를 Depends()와 함께 사용할 때 자동으로:
+# # SessionLocal()로 세션을 생성하고, 요청이 끝나면 자동으로 db.close()를 호출해 자원을 정리해준다.
+# # 이는 의존성 주입용 함수로 사용된다.
+# def get_db():
+#     db = database.SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
+
+# # /posts 경로로 GET 요청이 들어오면 get_posts() 함수가 실행된다.
+# # response_model은 응답 데이터를 검증하고, JSON 형태로 자동 변환한다.
+# # List[Post] -> 게시글 응답 객체의 리스트
+# # FastAPI는 내부적으로 Pydantic 모델을 통해 응답의 스키마를 검증한다.
+# @router.get("/posts", response_model=List[schemas.Post])
+
+# # 이 함수는 get_db()를 통해 DB 세션을 자동으로 받아 사용한다/
+# # db: Session -> sqlalchemy.orm.Session 타입의 세션 객체이다.
+# def get_posts(db: Session = Depends(get_db)):
+#     # DB의 Post 테이블에서 모든 레코드를조회하여 리스트로 반환한다.
+#     # 이 리스트의 위의 response_model 설정에 의해 PostResponse 형식으로 자동 변환된다.
+#     return db.query(models.Post).all()
+
+# # /posts 경로로 POST 요청이 들어오면 create_post() 함수가 실행된다.
+# # 프론트엔드에서 새 게시글 작성 요청을 보낼 때 사용한다.
+# # 응답은 생성된 게시글 하나의 정보를 반환하며, Post 형식으로 변환된다.
+# @router.post("/posts", response_model=schemas.Post)
+
+# # 요청 본문에 담긴 JSON 데이터를 PostCreate 스키마로 파싱한다.
+# # FastAPI는 Pydantic을 통해 자동으로 post 객체를 생성한다.
+# # db는 Depends(get_db)로 받아온 DB 세션이다.
+# def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
+#     # post.dict()는 PostCreate 객체를 딕셔너리로 변환한다.
+#     # ** 연산자를 사용해 이 딕셔너리 데이터를 Post ORM 모델 생성자에 전달한다.
+#     # 결과적으로 Post(title=..., content=..., author=...) 같은 ORM 객체가 생성된다.
+#     db_post = models.Post(**post.dict())
+#     # 생성된 Post 객체를 DB에 추가하겠다고 SQLAlchemy 세션에 등록한다.
+#     # 아직 실제로 DB에 반영되진 않았고, commit()을 해야 저장된다.
+#     db.add(db_post)
+#     # 위에서 등록한 객체를 DB에 영구 저장한다.
+#     # 실제 SQLite 파일(posts.db)에 반영되는 시점이다.
+#     db.commit()
+#     # db_post 객체를 새로고침하여 DB에서 자동으로 생성된 필드(예: id)값을 가져온다.
+#     # 이 과정을 거치면 응답 시에 ID 값도 포함된다.
+#     db.refresh(db_post)
+#     # 방금 저장한 게시글 ORM 객체를 반환한다.
+#     # FastAPI는 이를 PostResponse 스키마로 직렬화하여 클라이언트에 JSON으로 응답한다.
+#     return db_post
+
+
+# 3차
+from fastapi import APIRouter , Depends, HTTPException # 추가
 from sqlalchemy.orm import Session
-
-# 타입 힌트에 사용되는 List를 가져온다.
-# 예 :List[str]은 문자열로 구성된 리스트라는 의미이다.
-# 이 코드에서는 직접 사용되지는 않았지만, 나중에 API 반환 타입에 List[Post]와 같이 쓸 수 있다.
 from typing import List
-
-# 현재 디렉토리(app/)에서 세 개의 모듈을 가져온다.
-# models: SQLAlchemy ORM 모델(예: Post)
-# schemas: Pydantic 스키마(요청 및 응답 데이터 구조)
-# database: DB 연결 및 세션 설정을 포함하는 설정 파일
 from . import models, schemas, database
 
 
-# 라우터 객체를 생성한다.
-# 여기에 .get(), .post() 등의 라우팅 데코레이터를 붙여 여러 API 엔드포인트를 정의할 수 있다.
-# main.py에서 이 router를 앱에 연결한다: app.include_router(routes.router)
 router = APIRouter()
 
-# 이 함수는 DB 세션을 생성하고 반환(yield)하는 제너레이터이다.
-# FastAPI는 이 함수를 Depends()와 함께 사용할 때 자동으로:
-# SessionLocal()로 세션을 생성하고, 요청이 끝나면 자동으로 db.close()를 호출해 자원을 정리해준다.
-# 이는 의존성 주입용 함수로 사용된다.
 def get_db():
     db = database.SessionLocal()
     try:
@@ -97,42 +153,28 @@ def get_db():
     finally:
         db.close()
 
-# /posts 경로로 GET 요청이 들어오면 get_posts() 함수가 실행된다.
-# response_model은 응답 데이터를 검증하고, JSON 형태로 자동 변환한다.
-# List[Post] -> 게시글 응답 객체의 리스트
-# FastAPI는 내부적으로 Pydantic 모델을 통해 응답의 스키마를 검증한다.
 @router.get("/posts", response_model=List[schemas.Post])
-
-# 이 함수는 get_db()를 통해 DB 세션을 자동으로 받아 사용한다/
-# db: Session -> sqlalchemy.orm.Session 타입의 세션 객체이다.
 def get_posts(db: Session = Depends(get_db)):
-    # DB의 Post 테이블에서 모든 레코드를조회하여 리스트로 반환한다.
-    # 이 리스트의 위의 response_model 설정에 의해 PostResponse 형식으로 자동 변환된다.
     return db.query(models.Post).all()
 
-# /posts 경로로 POST 요청이 들어오면 create_post() 함수가 실행된다.
-# 프론트엔드에서 새 게시글 작성 요청을 보낼 때 사용한다.
-# 응답은 생성된 게시글 하나의 정보를 반환하며, Post 형식으로 변환된다.
-@router.post("/posts", response_model=schemas.Post)
+# 상세 조회 API 추가
+# URL의 post_id 값을 받아 DB에서 게시글 조회
+# 없으면 404 에러 반환
+# 있으면 해당 게시글 데이터를 JSON으로 반환
+@router.get("/posts/{post_id}", response_model=schemas.Post)
+def get_post(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
 
-# 요청 본문에 담긴 JSON 데이터를 PostCreate 스키마로 파싱한다.
-# FastAPI는 Pydantic을 통해 자동으로 post 객체를 생성한다.
-# db는 Depends(get_db)로 받아온 DB 세션이다.
+
+@router.post("/posts", response_model=schemas.Post)
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
-    # post.dict()는 PostCreate 객체를 딕셔너리로 변환한다.
-    # ** 연산자를 사용해 이 딕셔너리 데이터를 Post ORM 모델 생성자에 전달한다.
-    # 결과적으로 Post(title=..., content=..., author=...) 같은 ORM 객체가 생성된다.
+
     db_post = models.Post(**post.dict())
-    # 생성된 Post 객체를 DB에 추가하겠다고 SQLAlchemy 세션에 등록한다.
-    # 아직 실제로 DB에 반영되진 않았고, commit()을 해야 저장된다.
     db.add(db_post)
-    # 위에서 등록한 객체를 DB에 영구 저장한다.
-    # 실제 SQLite 파일(posts.db)에 반영되는 시점이다.
     db.commit()
-    # db_post 객체를 새로고침하여 DB에서 자동으로 생성된 필드(예: id)값을 가져온다.
-    # 이 과정을 거치면 응답 시에 ID 값도 포함된다.
     db.refresh(db_post)
-    # 방금 저장한 게시글 ORM 객체를 반환한다.
-    # FastAPI는 이를 PostResponse 스키마로 직렬화하여 클라이언트에 JSON으로 응답한다.
     return db_post
 
