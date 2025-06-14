@@ -1,4 +1,5 @@
 // src/pages/PostWrite.js
+/* 1차 시작 코드
 // React에서 상태를 관리하기 위한 useState 훅을 가져온다.
 // 사용자의 입력값을 저장하기 위해 필요하다.
 import {useState} from 'react';
@@ -86,4 +87,62 @@ function PostWrite(){
 // 이 컴포넌트를 외부에서도 사용할 수 있도록 내보낸다.
 // App.js 에서 <Route path="/write" element={<PostWrite />} />로 연결했기 때문에 
 // 페이지로 동작한다.
+export default PostWrite;
+*/
+
+import {useState} from 'react';
+import axios from 'axios';
+
+function PostWrite(){
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try{
+      const response = await axios.post('http://localhost:8000/posts/', {
+        title: title,
+        content: content,
+        author: '익명',
+      });
+
+      console.log('작성 성공:', response.data);
+      alert('글이 성공적으로 등록되었습니다!');
+      setContent('');
+    } catch (error) {
+      console.error('작성 실패:', error);
+      alert('글 작성 중 오류가 발생했습니다.');
+    }
+  };
+
+  return (
+    <div>
+      <h2>✏️ 게시글 작성</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            placeholder="제목"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{width: '400px', padding: '8px', marginBottom: '10px'}}
+          />
+        </div>
+        <div>
+          <textarea
+            placeholder="내용"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            style={{width: '400px', height: '200px', padding: '8px'}}
+          />
+        </div>
+        <div>
+          <button type="submit" style={{marginTop:'10px'}}>작성 완료</button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 export default PostWrite;

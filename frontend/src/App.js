@@ -13,6 +13,8 @@ import PostWrite from './pages/PostWrite';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
+import {Link} from 'react-router-dom';
+
 // APP 함수형 컴포넌트이다.
 // 이 컴포넌트는 React 앱의 루트 컴포넌트, 즉 가장 상위에 있는 컴포넌트이다.
 function App(){
@@ -27,10 +29,14 @@ function App(){
             HTML 기본 방식으로 페이지를 이동시킨다.(새로고침 발생)
             추후에는 React 전용 <Link to="">를 사용하는 것이 더 좋다.(새로고침 없이 부드럽게 이동)*/}
         <nav style={{ marginBottom: '20px'}}>
-          <a href="/">목록</a> |{' '}
+          <Link to="/">목록</Link> |{' '}
+          <Link to="/write">글쓰기</Link> |{' '}
+          <Link to="/login">로그인</Link> |{' '}
+          <Link to="/register">회원가입</Link>
+          {/* <a href="/">목록</a> |{' '}
           <a href="/write">글쓰기</a> |{' '}
           <a href="/login">로그인</a> |{' '}
-          <a href="/register">회원가입</a>
+          <a href="/register">회원가입</a> */}
         </nav>
       </div>
       {/* 페이지 연결 
