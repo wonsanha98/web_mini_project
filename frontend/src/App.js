@@ -12,7 +12,8 @@ import PostDetail from './pages/PostDetail';
 import PostWrite from './pages/PostWrite';
 import Login from './pages/Login';
 import Register from './pages/Register';
-
+import PostEdit from './pages/PostEdit';
+// 게시글 수정 컴포넌트(PostEdit)를 사용하기 위해 import 한다.
 import {Link} from 'react-router-dom';
 
 // APP 함수형 컴포넌트이다.
@@ -44,13 +45,15 @@ function App(){
           / 경로(홈페이지)에 들어오면 PostList 컴포넌트를 보여준다.
           /post/1 , /post/2 등 숫자(id)를 포함하는 경로에 오면 PostDetail 컴포넌트를 보여준다.
           :id는 변수 형태의 경로를 의미하고, 내부에서 useParams()로 꺼낼 수 있다.
-          /write, /login, /register 각각은 글쓰기, 로그인, 회원가입 페이지를 보여준다.*/}
+          /write, /login, /register 각각은 글쓰기, 로그인, 회원가입 페이지를 보여준다.
+          '/edit/:id 경로를 새로 추가하여 해당 ID를 가진 게시글을 수정하는 페이지로 라이팅도록 설정한다.'*/}
       <Routes>
         <Route path="/" element={<PostList />} />
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/write" element={<PostWrite />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/edit/:id" element={<PostEdit />} />
       </Routes>
     </Router>
   );

@@ -3,6 +3,8 @@
 # BaseModel은 FastAPI에서 사용하는 데이터 구조의 기본이 되는 클래스이다.
 from pydantic import BaseModel
 
+from typing import Optional # 선택적 필드 허용
+
 # 사용자가 POST로 데이터를 보낼 때 필요한 필드들을 정의한다.
 # 모두 문자열이며, 필수 입력값이다.
 class PostBase(BaseModel):
@@ -24,3 +26,10 @@ class Post(PostBase):
         # Pydantic v2부터는 orm_mode가 아닌 from_attributes = True로 변경됨
         from_attributes = True 
 
+
+# Optional[str]은 수정 시 일부 필드만 보내도 되도록 설정해준다.
+# title, content, author 중 하나만 보내도 업데이트 가능하게 만든다.
+class PostUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    author: Optional[str] = None

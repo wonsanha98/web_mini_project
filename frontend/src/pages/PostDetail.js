@@ -52,6 +52,9 @@ import {useParams} from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
+// React Router의 <Link> 컴포넌트를 사용하기 위해 import 한다.(페이지 새로고침 없이 부드럽게 이동 가능하게 함)
+import {Link} from 'react-router-dom'; 
+
 export default function PostDetail(){
   const{id} = useParams();                
   // 서버에서 데이터가 도착하기 전에는 null로 설정해두고, 도착 후에 setPost(response.data)로 업데이트.
@@ -92,12 +95,16 @@ export default function PostDetail(){
   if (!post) return <p>⏳ 게시글을 불러오는 중...</p>
 
   // HTML 버튼 요소, 클릭 시 handleDelete() 함수가 실행된다.
+  // 현재 게시글의 ID를 이용해 /edit/3 처럼 수정 페이지로 이동할 수 있도록 버튼을 만든다.
   return (
     <div>
       <h2>{post.title}</h2>
       <p><string>작성자:</string> {post.author}</p>
       <hr />
       <p>{post.content}</p>
+      <Link to={`/edit/${post.id}`}>
+        <button>✏️ 수정</button>
+      </Link>
       <button onClick={handleDelete} style={{marginTop: '20px', color: 'red'}}>
         🗑 삭제하기
       </button>

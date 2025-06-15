@@ -212,4 +212,37 @@ def delete_post(post_id: int, db: Session = Depends(get_db)):
     # 204 No Content 상태 코드에 맞게, 아무 본문 없이 응답을 종료한다.
     return
 
+# PATCH HTTP 메서드를 사용하여 특정 게시글(id) 일부를 수정한다.
+# response_model은 클라이언트에게 반환할 데이터 형식을 명시한다.
+# (PostUpdate 형태로 직렬화됨).
+@router.patch("/posts/{id}", response_model=schemas.PostUpdate)
+
+# update_post는 실제 요청이 들어왔을 때 실행되는 함수이다.
+# id: URL 경로에서 전달받은 게시글 번호이다.
+# post: schemas.PostUpdate: 클라이언트가 보낸 JSON 데이터를 PostUpdate Pydantic 모델로 변환해서 받는다. (Optional[str])
+# db: Session = Depends(get_db): 데이터베이스 세션을 의존성 주입 방식으로 받아온다.
+def update_post(id: int, post: schemas.PostUpdate, db: Session = Depends(get_db)):
+    # 해당 id를 가진 게시글을 데이터베이스에서 조회한다.
+    # first()를 통해 일치하는 첫 번째 게시글을 반환한다. 없으면 None.
+    db_post = db.query(models.Post).filter(models.Post.id == id).first()
+    # 게시글이 존재하지 않는다면 404 에러를 발생시켜 클라이언트에게 알려준다.
+    if db_post is None:
+        raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
+    # 만약 title이 요청에 포함되어 있다면(null이 아니면) -> 제목을 새 값으로 수정한다.
+    if post.title is not None:
+        db_post.title = post.title
+    # content가 전달된 경우에만 수정한다.
+    if post.content is not None:
+        db_post.content = post.content
+    # author가 요청에 포함되어 있으면 해당 필드를 새 값으로 바꾼다.
+    if post.author is not None:
+        db_post.author = post.author
+    
+    # 변경 내용을 실제 데이터베이스에 반영한다.
+    db.commit()
+    # commit() 후 DB로부터 최신 정보를 다시 불러와 db_post 객체를 갱신한다. (자동 수정된 필드 포함)
+    db.refresh(db_post)
+    # 수정된 게시글 객체를 반환한다. FastAPI는 이를 PostResponse 형식의 JSON으로 자동 직렬화한다.
+    return db_post
+
 
