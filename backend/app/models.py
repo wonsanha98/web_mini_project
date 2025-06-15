@@ -44,6 +44,9 @@ class Post(Base):
     # 하나의 게시글(Post)이 여러 댓글(Comment)을 가질 수 있도록 관계를 설정한다. 게시글 삭제 시 연결된 댓글도 함께 삭제된다.
     comments = relationship("Comment", back_populates="post", cascade="all, delete")
 
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="posts")
+
 # 댓글(Comment)모델 추가
 # SQLAlchemy ORM에서 댓글 테이블 생성을 위한 Comment 모델 클래스를 정의한다.
 class Comment(Base):
@@ -60,3 +63,25 @@ class Comment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     # Post 모델과 양방향 관계를 맺는 부분이다. 게시글(Post)이 갖는 댓글 리스트와 연결된다.
     post = relationship("Post", back_populates="comments")
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="comments")
+
+
+
+# User 모델 생성
+# 관계 설정(Post.user, Comment.user)은 이후 확장 가능하며, 현재 동작에는 문제가 없음
+# 이 클래스는 데이터베이스에 "users"라는 테이블을 생성한다.
+class User(Base):
+    __tablename__ = "users"
+
+    # 사용자마다 고유한 ID를 부여하는 기본 키이다.
+    id = Column(Integer, primary_key=True, index=True)
+    # 사용자 이름이며, 중복되지 않도록 unique 제약을 둔다.
+    username = Column(String, unique=True, index=True)
+    # 실제 비밀번호가 아닌 해싱된 비밀번호를 저장한다.
+    hashed_password = Column(String)
+
+    posts = relationship("Post", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+

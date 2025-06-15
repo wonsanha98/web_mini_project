@@ -54,3 +54,24 @@ class CommentResponse(CommentCreate):
 
     class Config:
         from_attributes = True 
+
+
+# 요청 및 응답용 데이터 구조(Pydantic 스키마) 정의
+# 회원가입 시 필요한 요청 데이터 형식이다.
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+# 사용자 등록 후 클라이언트에게 반환할 응답 형식이다.
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    class Config:
+        from_attributes = True
+
+# 로그인 성공 시 반환할 JWT 액세스 토큰의 구조이다.
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+

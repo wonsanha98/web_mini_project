@@ -21,6 +21,9 @@ from . import models
 
 from . import comment_routes
 
+# 인증 관련 API 라우트를 import 한다.
+from . import auth_routes
+
 # FastAPI 애플리케이션 인스턴스를 생성한다.
 # 이 인스턴트 app은 실제 웹 서버의 본체라고 생각하면된다.
 # 이후 이 app에 다양한 설정(라우팅, 미들웨어, 오류 처리 등)을 붙여나간다.
@@ -50,6 +53,9 @@ app.include_router(routes.router)
 
 
 app.include_router(comment_routes.router)
+
+# 회원가입 및 로그인 라우트를 FastAPI 앱에 등록한다.
+app.include_router(auth_routes.router)
 
 # 요약 
 # main.py는 FastAPI 서버의 진입점이다.
