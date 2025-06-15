@@ -7,6 +7,10 @@ from fastapi import FastAPI
 
 from fastapi.middleware.cors import CORSMiddleware # CORS 관련 모듈 추가
 
+# engine은 SQLite 데이터베이스에 연결된 객체이다. 여기에 테이블을 생성한다.
+from .database import engine
+
+
 # app/routes.py 파일에 있는 router 객체를 가져온다.
 # 이 router는 @router.get(...), @router.post(...) 같은 경로 설정을 모아둔 그룹이다.
 # 이렇게 분리하면 코드가 깔끔해지고 유지보수가 쉬워진다.
@@ -15,8 +19,7 @@ from . import routes
 # 모델 정의 불러오기
 from . import models 
 
-# engine은 SQLite 데이터베이스에 연결된 객체이다. 여기에 테이블을 생성한다.
-from .database import engine
+from . import comment_routes
 
 # FastAPI 애플리케이션 인스턴스를 생성한다.
 # 이 인스턴트 app은 실제 웹 서버의 본체라고 생각하면된다.
@@ -44,6 +47,9 @@ models.Base.metadata.create_all(bind=engine)
 # routes.py에서 정의한 /posts/경로들을 실제 서버에 연결하는 작업이다.
 # 이 코드가 없으면 routes.py에서 정의한 API는 동작하지 않는다.
 app.include_router(routes.router)
+
+
+app.include_router(comment_routes.router)
 
 # 요약 
 # main.py는 FastAPI 서버의 진입점이다.

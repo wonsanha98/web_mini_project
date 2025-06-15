@@ -5,6 +5,8 @@ from pydantic import BaseModel
 
 from typing import Optional # 선택적 필드 허용
 
+# from datetime import datetime
+
 # 사용자가 POST로 데이터를 보낼 때 필요한 필드들을 정의한다.
 # 모두 문자열이며, 필수 입력값이다.
 class PostBase(BaseModel):
@@ -33,3 +35,22 @@ class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     author: Optional[str] = None
+
+
+# class CommentBase(BaseModel):
+#     content: str
+#     author: str
+
+# 댓글 생성 시 필요한 데이터 구조를 정의한다. 댓글 내용과 작성자 이름은 필수이다.
+class CommentCreate(BaseModel):
+    content: str
+    author: str
+
+# DB에서 반환된 댓글을 응답할 때 사용하는 구조이다. 댓글 ID와 게시글 ID도 함께 포함된다.
+# from_attributes = True는 SQLAlchemy 모델을 JSON 응답으로 자동 직렬화하기 위한 설정이다.
+class CommentResponse(CommentCreate):
+    id: int
+    post_id: int
+
+    class Config:
+        from_attributes = True 
