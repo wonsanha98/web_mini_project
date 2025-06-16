@@ -77,3 +77,19 @@ def delete_comment(
     db.delete(comment)
     db.commit()
     return {"message": "댓글이 삭제되었습니다."}
+
+
+@router.patch("/comments/{comment_id}", response_model=schemas.CommentResponse)
+def update_comment(comment_id: int, comment_data: schemas.CommentUpdate, 
+                    db: Session = Depends(get_db), 
+                    current_user: models.User = Depends(security.get_current_user)):
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not comment: 
+        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
+    if comment.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
+
+    comment.content = comment_data.content
+    db.commit()
+    db.refresh(comment)
+    return comment

@@ -8,12 +8,14 @@ export default function NavBar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token');
     setIsAuthenticated(!!token);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_id');
+    alert("로그아웃 되었습니다.")
     setIsAuthenticated(false);
     navigate('/login');
   };

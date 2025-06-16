@@ -44,8 +44,8 @@ export default function Login(){
       const {access_token, user_id} = response.data;
       // 브라우저의 localStorage에 토큰을 저장한다.
       // 이 토큰은 이후 인증이 필요한 요청에 사용된다.
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('user_id', user_id);  // 사용자 id 저장
+      sessionStorage.setItem('access_token', access_token);
+      sessionStorage.setItem('user_id', user_id);  // 사용자 id 저장
 
       // 사용자에게 성공 알림을 표시하고, 메인 페이지로 리디렉션한다.
       alert('로그인 성공!');

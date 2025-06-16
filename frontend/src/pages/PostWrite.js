@@ -16,7 +16,7 @@ export default function PostWrite(){
   const handleSubmit = async () => {
     // JWT 토큰을 브라우저 로컬스토리지에서 꺼낸다.(인증용)
     try{
-      const token = localStorage.getItem('access_token');      
+      const token = sessionStorage.getItem('access_token');      
       // 토큰이 없는 경우 아예 요청을 보내지 않도록 한다.
       // if(!token){
       //   alert('로그인이 필요합니다.');

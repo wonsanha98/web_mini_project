@@ -43,7 +43,7 @@ export default function PostEdit(){
         }));
     };
 
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token');
     // 폼 제출 시 실행되는 함수이다.
     const handleSubmit = e => {
         // HTML 기본 동작(페이지 새로고침)을 막는다.

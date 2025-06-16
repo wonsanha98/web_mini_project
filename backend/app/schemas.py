@@ -57,6 +57,8 @@ class CommentResponse(CommentCreate):
     class Config:
         from_attributes = True 
 
+class CommentUpdate(BaseModel):
+    content: str
 
 # 요청 및 응답용 데이터 구조(Pydantic 스키마) 정의
 # 회원가입 시 필요한 요청 데이터 형식이다.

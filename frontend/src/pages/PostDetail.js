@@ -22,8 +22,11 @@ export default function PostDetail(){
   const[editingCommentId, setEditingCommentId] = useState(null);
   const[editedContent, setEditedContent] = useState('');
 
-  const token = localStorage.getItem('access_token');
-  const currentUserId = Number(localStorage.getItem('user_id'));
+  const token = sessionStorage.getItem('access_token');
+  const storedUserId = sessionStorage.getItem('user_id');
+  const currentUserId = storedUserId && !isNaN(Number(storedUserId)) 
+  ? Number(storedUserId) 
+  : null;
 
   const startEdit = (commentId, content) => {
     setEditingCommentId(commentId);
@@ -146,10 +149,24 @@ export default function PostDetail(){
       <ul>
         {comments.map((c, index) => (
           <li key={index}>
-            <strong>{c.author}</strong>: {c.content}
-            {c.user_id === currentUserId && (
+            <strong>{c.author}</strong>:{" "}
+            {editingCommentId === c.id ? (
               <>
-                <button style={{marginLeft: '10px'}}>✏️ 수정</button>
+                <textarea 
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                />
+                <button onClick={() => handleCommentUpdate(c.id)}>완료</button>
+              </>
+            ) : (
+              c.content
+            )}
+
+            {c.user_id && currentUserId && c.user_id === currentUserId && (
+              <>
+                <button 
+                onClick={() => startEdit(c.id, c.content)}
+                style={{marginLeft: '10px'}}>✏️ 수정</button>
                 <button 
                 onClick={() => handleCommentDelete(c.id)}
                 style={{color: 'red', marginLeft: '10px'}}>🗑 삭제</button>
@@ -161,7 +178,7 @@ export default function PostDetail(){
       
       {/* 댓글 입력 UI 추가
       댓글 작성 폼이다. 작성자와 내용 입력 후 '등록'버튼 클릭시 handleCommentSubmit()이 실행된다. */}
-      <h4>댓글 작성</h4>
+      {/* <h4>댓글 작성</h4>
       <input
         type="text"
         placeholder="작성자"
@@ -173,7 +190,26 @@ export default function PostDetail(){
         value={commentContent}
         onChange={(e) => setCommentContent(e.target.value)}
       ></textarea><br />
-      <button onClick={handleCommentSubmit} style={{marginTop: '10px'}}>등록</button>
+      <button onClick={handleCommentSubmit} style={{marginTop: '10px'}}>등록</button> */}
+      {currentUserId ? (
+        <>
+          <h4>댓글 작성</h4>
+          <input 
+            type="text"
+            placeholder="작성자"
+            value={commentAuthor}
+            onChange={(e) => setCommentAuthor(e.target.value)}
+          /><br />
+          <textarea 
+            placeholder="내용"
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+          /><br />
+          <button onClick={handleCommentSubmit} style={{marginTop:'10px'}}>등록</button>
+        </>
+      ) : (
+        <p style={{color:'gray'}}>댓글 작성을 위해 로그인해주세요.</p>
+        )}
     </div>
   )
 }
