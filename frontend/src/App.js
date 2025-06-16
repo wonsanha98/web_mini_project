@@ -1,9 +1,14 @@
+// src/App.js
+
 // 라우팅 관련 import
 // react-router-dom은 React 앱에서 화면 전환(라우팅)을 가능하게 해주는 라이브러리
 // BrowerRouter 는 HTML5 히스토리 API를 기반으로 경로를 관리해주는 라우터이다.
 // Router 라는 이름으로 사용하겠다고 as Router로 별칭을 붙인 것
 // Routes는 여러 Route들을 묶는 용도, Route는 각 URL 경로에 해당 컴포넌트를 보여주는 역할
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'; 
+
+// 보호된 라우트를 설정하기 위해서 PrivateRoute를 import
+import PrivateRoute from './components/PrivateRoute';
 
 // 만든 페이지 import
 // 만든 각각의 페이지 컴포넌트들을 불러온다.
@@ -12,9 +17,13 @@ import PostDetail from './pages/PostDetail';
 import PostWrite from './pages/PostWrite';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import PostEdit from './pages/PostEdit';
+
 // 게시글 수정 컴포넌트(PostEdit)를 사용하기 위해 import 한다.
+import PostEdit from './pages/PostEdit';
+
 import {Link} from 'react-router-dom';
+
+import NavBar from './components/NavBar';
 
 // APP 함수형 컴포넌트이다.
 // 이 컴포넌트는 React 앱의 루트 컴포넌트, 즉 가장 상위에 있는 컴포넌트이다.
@@ -24,21 +33,7 @@ function App(){
     //이 안에 있어야 Route, Link, useParams 등이 정상적으로 작동한다.
     <Router>
       <div>
-        {/* 임시 네비게이션? <nav>태그는 메뉴바 역할이다. 
-            스타일로 아래쪽 여백(marginBottom)을 줘서 화면이 붙지 않게 함.
-            각 <a href="">는 페이지 간 이동 링크이다.
-            HTML 기본 방식으로 페이지를 이동시킨다.(새로고침 발생)
-            추후에는 React 전용 <Link to="">를 사용하는 것이 더 좋다.(새로고침 없이 부드럽게 이동)*/}
-        <nav style={{ marginBottom: '20px'}}>
-          <Link to="/">목록</Link> |{' '}
-          <Link to="/write">글쓰기</Link> |{' '}
-          <Link to="/login">로그인</Link> |{' '}
-          <Link to="/register">회원가입</Link>
-          {/* <a href="/">목록</a> |{' '}
-          <a href="/write">글쓰기</a> |{' '}
-          <a href="/login">로그인</a> |{' '}
-          <a href="/register">회원가입</a> */}
-        </nav>
+        <NavBar /> {/* 상단바 삽입 */}
       </div>
       {/* 페이지 연결 
           Routes 컴포넌트는 여러 개의 Route를 감싸서 정의할 수 있게 해준다.
@@ -50,7 +45,12 @@ function App(){
       <Routes>
         <Route path="/" element={<PostList />} />
         <Route path="/post/:id" element={<PostDetail />} />
-        <Route path="/write" element={<PostWrite />} />
+        <Route path="/write" element={
+          // PostWrite를 PrivateRoute로 감싸서 사용자 인증이 됐을 경우만 접근 가능
+          <PrivateRoute>
+            <PostWrite />
+          </PrivateRoute>
+        } />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/edit/:id" element={<PostEdit />} />

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 # 여러 댓글 응답을 리스트 형태로 반환할 때 사용할 타입 힌트를 제공하는 Python 기본 모듈이다.
 from typing import List
 # 같은 디렉토리 내에 있는 DB 모델 정의(models), 데이터 검증 스키마(schemas),DB 세션 설정(database)파일을 가져온다.
-from . import models, schemas, database
+from . import models, schemas, database, security
 
 # 댓글 관련 API엔드포인트를 따로 묶어 관리하기 위한 FastAPI 라우터 객체이다. main.py에서 이 라우터를 포함시킨다.
 router = APIRouter()
@@ -42,7 +42,13 @@ def create_comment(post_id: int, comment: schemas.CommentCreate, db: Session = D
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
     
     # Pydantic 객체를 딕셔너리로 바꾸고, post_id를 추가로 포함하여 새로운 댓글 ORM 객체를 생성한다.
-    db_comment = models.Comment(**comment.dict(), post_id=post_id)
+    # db_comment = models.Comment(**comment.dict(), post_id=post_id)
+    db_comment = models.Comment(
+        post_id=post_id,
+        content=comment.content,
+        author=comment.author,
+        user_id=comment.user_id     # user_id 저장
+    )
     # 이 객체를 세션에 추가해 저장 요청을 준비한다.
     db.add(db_comment)
     # 세션을 커밋하여 실제 DB에 반영한다.
@@ -51,3 +57,23 @@ def create_comment(post_id: int, comment: schemas.CommentCreate, db: Session = D
     db.refresh(db_comment)
     # 저장된 댓글 객체를 반환하면 FastAPI가 JSON으로 자동 직렬화하여 응답한다.
     return db_comment
+
+
+# DELETE /posts/{post_id}/comments/{comment_id}
+@router.delete("/posts/{post_id}/comments/{comment_id}")
+def delete_comment(
+    post_id: int, 
+    comment_id: int, 
+    current_user: models.User = Depends(security.get_current_user), 
+    db: Session = Depends(get_db)
+    ):
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_id, models.Comment.post_id == post_id).first()
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
+    if comment.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="댓글 삭제 권한이 없습니다.")
+    
+    db.delete(comment)
+    db.commit()
+    return {"message": "댓글이 삭제되었습니다."}

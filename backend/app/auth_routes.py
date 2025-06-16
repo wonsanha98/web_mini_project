@@ -30,6 +30,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
+
 # 로그인 요청을 처리하는 API이다.
 @router.post("/login", response_model=schemas.Token)
 # 클라이언트에서 보낸 username과 password를 받아오는 FastAPI 기본 제공 의존성이다.
@@ -39,4 +40,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise HTTPException(status_code=401, detail="아이디 또는 비밀 번호가 틀렸습니다.")
     # 로그인 성공 시 JWT 토큰을 생성해 응답한다.
     access_token = security.create_access_token(data={"sub":user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user_id": user.id  # user_id 포함
+        }

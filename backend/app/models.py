@@ -85,3 +85,4 @@ class User(Base):
     posts = relationship("Post", back_populates="user")
     comments = relationship("Comment", back_populates="user")
 
+

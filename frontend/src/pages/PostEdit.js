@@ -43,12 +43,17 @@ export default function PostEdit(){
         }));
     };
 
+    const token = localStorage.getItem('access_token');
     // 폼 제출 시 실행되는 함수이다.
     const handleSubmit = e => {
         // HTML 기본 동작(페이지 새로고침)을 막는다.
         e.preventDefault();
         // FastAPI 백엔드에 PATCH 요청을 보내 게시글 내용을 수정한다.
-        axios.patch(`http://localhost:8000/posts/${id}`, post)
+        axios.patch(`http://localhost:8000/posts/${id}`, post, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        })
         // 수정 성공 시 사용자에게 알리고, 해당 게시글의 상세 페이지로 이동시킨다.
         .then(() => {
             alert("게시글이 수정되었습니다.");

@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from typing import Optional # 선택적 필드 허용
 
-# from datetime import datetime
 
 # 사용자가 POST로 데이터를 보낼 때 필요한 필드들을 정의한다.
 # 모두 문자열이며, 필수 입력값이다.
@@ -19,8 +18,9 @@ class PostCreate(PostBase):
 
 # DB에서 조회된 결과는 id도 포함되므로 확장된 모델을 정의한다.
 # PostBase를 상속해서 중복을 피하고, id만 추가한다.
-class Post(PostBase):
+class PostResponse(PostBase):
     id: int
+    user_id: int    # 현재 로그인한 사용자 
 
     # SQLAlchemy 모델을 반환할 때, 자동으로 dict처럼 변환해주는 설정이다.
     # 이 설정이 없으면 FastAPI가 응답을 직렬화할 때 오류가 날 수 있다.
@@ -45,12 +45,14 @@ class PostUpdate(BaseModel):
 class CommentCreate(BaseModel):
     content: str
     author: str
+    user_id: int        # 추가
 
 # DB에서 반환된 댓글을 응답할 때 사용하는 구조이다. 댓글 ID와 게시글 ID도 함께 포함된다.
 # from_attributes = True는 SQLAlchemy 모델을 JSON 응답으로 자동 직렬화하기 위한 설정이다.
 class CommentResponse(CommentCreate):
     id: int
     post_id: int
+    user_id: int
 
     class Config:
         from_attributes = True 
@@ -73,5 +75,6 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user_id: int
 
 
