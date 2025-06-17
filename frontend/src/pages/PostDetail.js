@@ -109,12 +109,13 @@ export default function PostDetail() {
           </div>
         ) : (
           <>
-            <h2 style={{ color: 'skyblue', marginBottom: '10px' }}>{post.title}</h2>
+            <h2 style={{ color: 'skyblue', marginBottom: '10px',  }}>{post.title}</h2>
             <div style={{ textAlign: 'right', marginBottom: '10px' }}>
-              <strong>작성자:</strong> {post.author}
+              {/* <strong>작성자:</strong> {post.author} */}
+              <strong>{post.author}</strong>
             </div>
             <hr style={{ borderColor: '#444' }} />
-            <p style={{ marginTop: '10px' }}>{post.content}</p>
+            <p style={{ marginTop: '10px', whiteSpace: 'pre-line'}}>{post.content}</p>
 
             {post.user_id === currentUserId && (
               <div style={{ marginTop: '20px', textAlign: 'right' }}>
@@ -128,8 +129,8 @@ export default function PostDetail() {
             <h3 style={{ marginTop: '40px', color: 'skyblue' }}>댓글</h3>
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {comments.map((c) => (
-                <li key={c.id} style={{ marginBottom: '15px' }}>
-                  <strong style={{ color: 'skyblue' }}>{c.author}</strong>:{" "}
+                <li key={c.id} style={{ marginBottom: '25px', borderBottom: '1px solid #444', paddingBottom: '10px' }}>
+                  <p style={{ color: 'skyblue', fontWeight: 'bold', marginBottom: '5px' }}>{c.author}</p>
                   {editingCommentId === c.id ? (
                     <>
                       <textarea
@@ -137,17 +138,17 @@ export default function PostDetail() {
                         onChange={(e) => setEditedContent(e.target.value)}
                         style={textareaStyleSmall}
                       />
-                      <button onClick={() => handleCommentUpdate(c.id)} style={buttonStyle}>완료</button>
+                      <button onClick={() => handleCommentUpdate(c.id)} style={smallButtonStyle}>완료</button>
                     </>
                   ) : (
-                    <span>{c.content}</span>
+                    <p style={{ marginBottom: '5px' }}>{c.content}</p>
                   )}
 
                   {c.user_id === currentUserId && (
-                    <>
-                      <button onClick={() => startEdit(c.id, c.content)} style={buttonStyle}>수정</button>
-                      <button onClick={() => handleCommentDelete(c.id)} style={buttonStyle}>삭제</button>
-                    </>
+                    <div style={{ marginTop: '5px' }}>
+                      <button onClick={() => startEdit(c.id, c.content)} style={smallButtonStyle}>수정</button>
+                      <button onClick={() => handleCommentDelete(c.id)} style={smallButtonStyle}>삭제</button>
+                    </div>
                   )}
                 </li>
               ))}
@@ -188,10 +189,13 @@ const outerStyle = {
   backgroundColor: 'black',
   color: 'white',
   padding: '40px',
+  paddingTop: '150px', // 상단 여백 추가
   boxSizing: 'border-box',
+  overflowY: 'auto', //  스크롤 가능하도록
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+  alignItems: 'flex-start', // 상단 정렬
 };
 
 const innerStyle = {
@@ -235,3 +239,16 @@ const buttonStyle = {
   borderRadius: '5px',
   cursor: 'pointer',
 };
+
+const smallButtonStyle = {
+  marginRight: '6px',
+  marginTop: '6px',
+  padding: '4px 10px',
+  fontSize: '12px',
+  backgroundColor: 'skyblue',
+  color: 'black',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+

@@ -22,13 +22,14 @@ import Register from './pages/Register';
 // 게시글 수정 컴포넌트(PostEdit)를 사용하기 위해 import 한다.
 import PostEdit from './pages/PostEdit';
 
-import {Link} from 'react-router-dom';
+// import {Link} from 'react-router-dom';
 
 import NavBar from './components/NavBar';
 
 // APP 함수형 컴포넌트이다.
 // 이 컴포넌트는 React 앱의 루트 컴포넌트, 즉 가장 상위에 있는 컴포넌트이다.
 function App(){
+  document.body.style.overflowY = 'scroll';
   return(
     //<Router>는 모든 라우팅 기능이 동작할 수 있도록 하는 라우팅 컨테이너이다.
     //이 안에 있어야 Route, Link, useParams 등이 정상적으로 작동한다.

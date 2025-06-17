@@ -39,17 +39,31 @@ export default function Login() {
       color: 'white',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      overflowY: 'auto',
     }}>
-      {/* 상단에 구 삽입 */}
-      <RotatingSphere /> 
-      <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>로그인</h2>
-
+      
+      {/* 문구: 상단 중앙 정렬 */}
+      <p style={{
+        color: 'gray',
+        fontSize: '18px',
+        textAlign: 'center',
+        marginTop: '80px',
+        marginBottom: '20px'
+      }}>
+        One post. One comment. One shared space.
+      </p>
+  
+      {/* 회전 구체 */}
+      <RotatingSphere />
+  
+      {/* 로그인 폼 */}
+      <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>Login</h2>
+      
       <input
         type="text"
-        placeholder="아이디"
+        placeholder="ID"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         style={{
@@ -57,13 +71,15 @@ export default function Login() {
           padding: '10px',
           fontSize: '16px',
           marginBottom: '20px',
+          color: 'white',
+          backgroundColor: '#222',
           borderRadius: '5px'
         }}
       /><br />
-
+  
       <input
         type="password"
-        placeholder="비밀번호"
+        placeholder="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         style={{
@@ -71,10 +87,12 @@ export default function Login() {
           padding: '10px',
           fontSize: '16px',
           marginBottom: '20px',
+          color: 'white',
+          backgroundColor: '#222',
           borderRadius: '5px'
         }}
       /><br />
-
+  
       <button
         onClick={handleLogin}
         style={{
@@ -87,10 +105,11 @@ export default function Login() {
           cursor: 'pointer'
         }}
       >
-        로그인
+        Login
       </button>
-
+  
       {error && <p style={{ color: 'red', marginTop: '15px' }}>{error}</p>}
     </div>
   );
 }
+

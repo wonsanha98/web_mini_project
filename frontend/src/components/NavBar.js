@@ -70,9 +70,9 @@ export default function NavBar() {
         alignItems: 'center'
       }}
     >
-      <Link to="/" style={linkStyle}>홈</Link>
-      <Link to="/list" style={linkStyle}>목록</Link>
-      <Link to="/write" style={linkStyle}>글쓰기</Link>
+      <Link to="/" style={linkStyle}>Home</Link>
+      <Link to="/list" style={linkStyle}>List</Link>
+      <Link to="/write" style={linkStyle}>write</Link>
       {isAuthenticated ? (
         <button
           onClick={handleLogout}
@@ -83,12 +83,12 @@ export default function NavBar() {
             cursor: 'pointer'
           }}
         >
-          로그아웃
+          Logout
         </button>
       ) : (
         <>
-          <Link to="/login" style={linkStyle}>로그인</Link>
-          <Link to="/register" style={linkStyle}>회원가입</Link>
+          <Link to="/login" style={linkStyle}>Login</Link>
+          <Link to="/register" style={linkStyle}>Sign up</Link>
         </>
       )}
     </div>

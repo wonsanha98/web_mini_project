@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import RotatingSphere2 from '../components/RotatingSphere2';
+
 
 export default function PostEdit() {
   const { id } = useParams();
@@ -54,6 +56,7 @@ export default function PostEdit() {
   return (
     <div style={outerStyle}>
       <div style={innerStyle}>
+        <RotatingSphere2 />
         <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>게시글 수정</h2>
 
         <input
@@ -81,23 +84,29 @@ export default function PostEdit() {
 
 // 동일한 스타일 상수 재사용
 const outerStyle = {
-  width: '100vw',
-  height: '100vh',
-  backgroundColor: 'black',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  color: 'white',
-  overflowY: 'auto',
-  padding: '40px',
-  boxSizing: 'border-box',
-};
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'black',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'start', // 가운데가 아니라 위로 붙이기
+    color: 'white',
+    overflowY: 'auto',
+    padding: '100px 40px 40px', // 상단 20px, 좌우 40px, 하단 40px
+    boxSizing: 'border-box',
+  };
 
 const innerStyle = {
-  width: '100%',
-  maxWidth: '800px',
-  display: 'flex',
-  flexDirection: 'column',
+    width: '100%',
+    maxWidth: '800px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center', 
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: '40px',
+    borderRadius: '12px',
+    boxShadow: '0 0 30px rgba(135, 206, 250, 0.2)',
+    zIndex: 2
 };
 
 const inputStyle = {
@@ -131,5 +140,6 @@ const buttonStyle = {
   border: 'none',
   borderRadius: '5px',
   cursor: 'pointer',
+  alignSelf: 'center'
 };
 

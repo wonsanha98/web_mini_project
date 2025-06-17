@@ -31,13 +31,68 @@ function PostList() {
       overflowY: 'auto'
     }}>
       <div style={{ color: 'skyblue', marginBottom: '80px' }}></div>
-      {/* <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>게시글 목록</h2> */}
       <ul style={{ listStyle: 'none', padding: 0, width: '60%' }}>
         {posts.map(post => (
-          <li key={post.id} style={{ marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '10px' }}>
-            <Link to={`/post/${post.id}`} style={{ color: 'white', textDecoration: 'none', fontSize: '18px' }}>
-              <strong style={{ color: 'skyblue' }}>{post.title}</strong> - {post.author}
-            </Link>
+          <li
+            key={post.id}
+            style={{
+              marginBottom: '20px',
+              borderBottom: '1px solid rgba(255,255,255,0.2)',
+              paddingBottom: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              transition: 'transform 0.2s ease, background-color 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            {/* 왼쪽: 파란 구 + 제목 */}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {/* 파란 구 형태의 점 */}
+              <div
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle at 30% 30%, #00bfff, #007fff)',
+                  boxShadow: '0 0 6px #00bfff',
+                  marginRight: '10px',
+                  flexShrink: 0,
+                }}
+              />
+              {/* 게시글 제목 */}
+              <Link
+                to={`/post/${post.id}`}
+                style={{
+                  color: 'white',
+                  textDecoration: 'none',
+                  fontSize: '18px',
+                  transition: 'color 0.2s ease, text-shadow 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'skyblue';
+                  e.currentTarget.style.textShadow = '0 0 8px rgba(135, 206, 250, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.textShadow = 'none';
+                }}
+              >
+                <div style={{ color: 'skyblue' }}>{post.title}</div>
+              </Link>
+            </div>
+
+            {/* 오른쪽: 작성자 */}
+            <span style={{ color: 'gray', fontSize: '14px', flexShrink: 0 }}>
+              {post.author}
+            </span>
           </li>
         ))}
       </ul>

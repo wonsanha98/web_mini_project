@@ -38,18 +38,29 @@ export default function Register() {
       color: 'white',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      overflowY: 'auto',
     }}>
+      
+      {/* 문구: 상단 중앙 정렬 */}
+      <p style={{
+        color: 'gray',
+        fontSize: '18px',
+        textAlign: 'center',
+        marginTop: '80px',
+        marginBottom: '20px'
+      }}>
+        One post. One comment. One shared space.
+      </p>
       {/* 상단에 구 삽입 */}
       <RotatingSphere />
 
-      <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>회원가입</h2>
+      <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>Sign up</h2>
 
       <input
         type="text"
-        placeholder="아이디"
+        placeholder="ID"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         style={{
@@ -57,13 +68,15 @@ export default function Register() {
           padding: '10px',
           fontSize: '16px',
           marginBottom: '20px',
+          color: 'white',
+          backgroundColor: '#222',
           borderRadius: '5px'
         }}
       /><br />
 
       <input
         type="password"
-        placeholder="비밀번호"
+        placeholder="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         style={{
@@ -71,6 +84,8 @@ export default function Register() {
           padding: '10px',
           fontSize: '16px',
           marginBottom: '20px',
+          color: 'white',
+          backgroundColor: '#222',
           borderRadius: '5px'
         }}
       /><br />
@@ -87,7 +102,7 @@ export default function Register() {
           cursor: 'pointer'
         }}
       >
-        회원가입
+        Sign up
       </button>
 
       {error && <p style={{ color: 'red', marginTop: '15px' }}>{error}</p>}

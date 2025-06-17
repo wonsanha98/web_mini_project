@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import RotatingSphere2 from '../components/RotatingSphere2';
+
 
 export default function PostWrite() {
   const [title, setTitle] = useState('');
@@ -11,7 +13,7 @@ export default function PostWrite() {
   const handleSubmit = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
-      
+
       if (!title.trim() || !content.trim()) {
         alert("제목과 내용을 모두 입력해주세요.");
         return;
@@ -41,7 +43,8 @@ export default function PostWrite() {
   return (
     <div style={outerStyle}>
       <div style={innerStyle}>
-        <h2 style={{ color: 'skyblue', marginBottom: '30px' }}> 새 글 작성</h2>
+        <RotatingSphere2 />
+        <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>New Post</h2>
 
         <input
           type="text"
@@ -58,7 +61,8 @@ export default function PostWrite() {
           style={textareaStyle}
         /><br />
 
-        <button onClick={handleSubmit} style={buttonStyle}>작성하기</button>
+        <button onClick={handleSubmit} 
+        style={buttonStyle}>작성하기</button>
       </div>
     </div>
   );
@@ -71,10 +75,10 @@ const outerStyle = {
   backgroundColor: 'black',
   display: 'flex',
   justifyContent: 'center',
-  alignItems: 'center',
+  alignItems: 'start', // 가운데가 아니라 위로 붙이기
   color: 'white',
   overflowY: 'auto',
-  padding: '40px',
+  padding: '100px 40px 40px', // 상단 20px, 좌우 40px, 하단 40px
   boxSizing: 'border-box',
 };
 
@@ -83,6 +87,12 @@ const innerStyle = {
   maxWidth: '800px',
   display: 'flex',
   flexDirection: 'column',
+  alignItems: 'center', 
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  padding: '40px',
+  borderRadius: '12px',
+  boxShadow: '0 0 30px rgba(135, 206, 250, 0.2)',
+  zIndex: 2
 };
 
 const inputStyle = {
@@ -116,4 +126,5 @@ const buttonStyle = {
   border: 'none',
   borderRadius: '5px',
   cursor: 'pointer',
+  alignSelf: 'center'
 };
