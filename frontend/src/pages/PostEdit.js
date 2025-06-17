@@ -1,99 +1,135 @@
 // src/pages/PostEdit.js
 
-// React 훅 중 useState, useEffect를 불러온다. 각각 상태 관리 및 API 호출용이다.
-import {useEffect, useState} from 'react';
-// useNavigate: 페이지 이동에 사용, useParams: URL에서 게시글 ID 추출에 사용한다.
-import {useNavigate, useParams} from 'react-router-dom';
-// 백엔드 API 요청을 보내기 위해 axios 라이브러리를 import 한다.
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-// 게시글 수정 화면을 구성하는 React 컴포넌트(PostEdit)를 정의한다.
-export default function PostEdit(){
-    // 현재 URL에서 게시글의 고유 ID를 추출한다. 예: /edit/3 -> id는 3.
-    const {id} = useParams();
-    // 수정 후 /post/:id 페이지로 이동하기 위해 사용하는 라우터 함수이다.
-    const navigate = useNavigate();
+export default function PostEdit() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [post, setPost] = useState({
+    title: '',
+    content: '',
+    author: ''
+  });
 
-    // 수정 폼에 사용할 게시글 상태를 정의하고 초기값을 빈 값으로 설정한다.
-    const [post, setPost] = useState({
-        title: '',
-        content: '',
-        author:''
-    });
+  useEffect(() => {
+    axios.get(`http://localhost:8000/posts/${id}`)
+      .then(response => setPost(response.data))
+      .catch(() => alert("게시글을 불러올 수 없습니다."));
+  }, [id]);
 
-    // 컴포넌트가 처음 렌더링 될 때 실행된다. (API 호출 시 사용)
-    useEffect(() => {
-        // FastAPI 백엔드에 GET 요청을 보내 해당 id의 게시글 정보를 가져온다.
-        axios.get(`http://localhost:8000/posts/${id}`)
-        // 응답 데이터(게시글 정보)를 post 상태에 저장한다.
-        .then(response => setPost(response.data))
-        // 오류가 발생하면 사용자에게 alert 창을 띄워 알린다.
-        .catch(err => alert("게시글을 불러올 수 없습니다."));
-        // 의존성 배열: id가 바뀔 때마다 이 effect가 재실행된다.
-    }, [id]);
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setPost(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    // input 또는 textarea가 변경될 때 실행되는 함수이다.
-    const handleChange = e => {
-        // 이벤트 대상(input)의 name과 value를 추출한다. 예: name="title", value="새 제목"
-        const {name, value} = e.target;
-        // 기존 post 상태를 복사해서 해당 필드만 업데이트한다.
-        setPost(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+  const token = sessionStorage.getItem('access_token');
 
-    const token = sessionStorage.getItem('access_token');
-    // 폼 제출 시 실행되는 함수이다.
-    const handleSubmit = e => {
-        // HTML 기본 동작(페이지 새로고침)을 막는다.
-        e.preventDefault();
-        // FastAPI 백엔드에 PATCH 요청을 보내 게시글 내용을 수정한다.
-        axios.patch(`http://localhost:8000/posts/${id}`, post, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            }
-        })
-        // 수정 성공 시 사용자에게 알리고, 해당 게시글의 상세 페이지로 이동시킨다.
-        .then(() => {
-            alert("게시글이 수정되었습니다.");
-            navigate(`/post/${id}`);
-        })
-        // 오류가 나면 사용자에게 알린다.
-        .catch(err => {
-            alert("수정 중 오류가 발생했습니다.");
-        });
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // 화면에 표시할 내용을 반환하는 JSX 시작
-    // 상단에 수정 페이지 제목을 보여준다.
-    // 폼을 생성하고, 제출 시 위의 handleSubmit 함수가 실행되게 한다.
-    return (
-        <div>
-            <h2>✏️ 게시글 수정</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="title"
-                    value={post.title}
-                    onChange={handleChange}
-                    placeholder="제목"
-                /><br />
-                <textarea 
-                    name="content"
-                    value={post.content}
-                    onChange={handleChange}
-                    placeholder="내용"
-                /><br />
-                <input 
-                    type="text"
-                    name="author"
-                    value={post.author}
-                    onChange={handleChange}
-                    placeholder="작성자"
-                /><br />
-                <button type="submit">수정 완료</button>
-            </form>
-        </div>
-    );
+    if (!post.title.trim() || !post.content.trim()) {
+      alert("제목과 내용을 모두 입력해주세요.");
+      return;
+    }
+
+    try {
+      await axios.patch(`http://localhost:8000/posts/${id}`, post, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      alert("게시글이 수정되었습니다.");
+      navigate(`/post/${id}`);
+    } catch {
+      alert("수정 중 오류가 발생했습니다.");
+    }
+  };
+
+  return (
+    <div style={outerStyle}>
+      <div style={innerStyle}>
+        <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>게시글 수정</h2>
+
+        <input
+          type="text"
+          name="title"
+          placeholder="제목을 입력하세요"
+          value={post.title}
+          onChange={handleChange}
+          style={inputStyle}
+        /><br />
+
+        <textarea
+          name="content"
+          placeholder="내용을 입력하세요"
+          value={post.content}
+          onChange={handleChange}
+          style={textareaStyle}
+        /><br />
+
+        <button type="submit" onClick={handleSubmit} style={buttonStyle}>수정 완료</button>
+      </div>
+    </div>
+  );
 }
+
+// 동일한 스타일 상수 재사용
+const outerStyle = {
+  width: '100vw',
+  height: '100vh',
+  backgroundColor: 'black',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  color: 'white',
+  overflowY: 'auto',
+  padding: '40px',
+  boxSizing: 'border-box',
+};
+
+const innerStyle = {
+  width: '100%',
+  maxWidth: '800px',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  fontSize: '16px',
+  marginBottom: '20px',
+  borderRadius: '5px',
+  backgroundColor: '#222',
+  color: 'white',
+  border: '1px solid #555',
+};
+
+const textareaStyle = {
+  width: '100%',
+  height: '200px',
+  padding: '10px',
+  fontSize: '16px',
+  borderRadius: '5px',
+  backgroundColor: '#222',
+  color: 'white',
+  border: '1px solid #555',
+};
+
+const buttonStyle = {
+  marginTop: '20px',
+  padding: '10px 20px',
+  fontSize: '16px',
+  backgroundColor: 'skyblue',
+  color: 'black',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+};
+

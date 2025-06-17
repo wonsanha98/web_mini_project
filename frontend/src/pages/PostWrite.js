@@ -1,72 +1,4 @@
 // src/pages/PostWrite.js
-// 3차
-// import {useState} from 'react';
-// import axios from 'axios';
-// // 페이지 이동(redirect)을 위해 React Router의 useNavigate 훅을 사용한다.
-// import {useNavigate} from 'react-router-dom';
-
-// export default function PostWrite(){
-//   const [title, setTitle] = useState('');
-//   const [content, setContent] = useState('');
-//   // 게시글 작성후 목록 페이지(/)로 이동하기 위해 navigate 함수를 생성한다.
-//   const navigate = useNavigate();
-
-//   // 버튼 클릭 시 실행될 비동기 함수이다.
-//   const handleSubmit = async () => {
-//     // JWT 토큰을 브라우저 로컬스토리지에서 꺼낸다.(인증용)
-//     try{
-//       const token = sessionStorage.getItem('access_token');      
-//       // 토큰이 없는 경우 아예 요청을 보내지 않도록 한다.
-//       if(!token){
-//         alert('로그인이 필요합니다.');
-//         navigate('/login');
-//         return;
-//       }
-
-//       // 백엔드 서버의 게시글 등록 API(POST /posts)에 요청을 보낸다.
-//       const response = await axios.post(
-//         'http://localhost:8000/posts',
-//         // 전송할 데이터로 제목, 내용, 작성자명을 포함한다.
-//         {
-//           title,
-//           content,
-//           author: '작성자닉네임',
-//         },
-//         // 요청 헤더에 JWT 토큰을 포함시켜 인증된 사용자임을 증명한다.
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-//       alert('게시글이 등록되었습니다.');
-//       navigate('/');
-//     } catch(err){
-//       console.error(err);
-//       alert('게시글 등록 실패');
-//     }
-//   };
-
-//   return(
-//     <div>
-//       <h2>✏️ 새 글 작성</h2>
-//       <input 
-//         type="text"
-//         placeholder="제목"
-//         value={title}
-//         onChange={(e) => setTitle(e.target.value)}
-//       /><br />
-//       <textarea 
-//         placeholder="내용"
-//         value={content}
-//         onChange={(e) => setContent(e.target.value)}
-//       /><br />
-//       <button onClick={handleSubmit}>작성하기</button>
-//     </div>
-//   )
-// }
-
-// src/pages/PostWrite.js
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -79,8 +11,12 @@ export default function PostWrite() {
   const handleSubmit = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
-
-      const response = await axios.post(
+      
+      if (!title.trim() || !content.trim()) {
+        alert("제목과 내용을 모두 입력해주세요.");
+        return;
+      }
+      await axios.post(
         'http://localhost:8000/posts',
         {
           title,
@@ -93,6 +29,7 @@ export default function PostWrite() {
           },
         }
       );
+
       alert('게시글이 등록되었습니다.');
       navigate('/');
     } catch (err) {
@@ -102,58 +39,81 @@ export default function PostWrite() {
   };
 
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'black',
-      color: 'white',
-      padding: '40px',
-      boxSizing: 'border-box'
-    }}>
-      <h2 style={{ color: 'skyblue', marginBottom: '30px' }}> 새 글 작성</h2>
+    <div style={outerStyle}>
+      <div style={innerStyle}>
+        <h2 style={{ color: 'skyblue', marginBottom: '30px' }}> 새 글 작성</h2>
 
-      <input
-        type="text"
-        placeholder="제목"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '10px',
-          fontSize: '16px',
-          marginBottom: '20px',
-          borderRadius: '5px'
-        }}
-      /><br />
+        <input
+          type="text"
+          placeholder="제목을 입력하세요"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          style={inputStyle}
+        /><br />
 
-      <textarea
-        placeholder="내용"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        style={{
-          width: '100%',
-          height: '200px',
-          padding: '10px',
-          fontSize: '16px',
-          borderRadius: '5px'
-        }}
-      /><br />
+        <textarea
+          placeholder="내용을 입력하세요"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          style={textareaStyle}
+        /><br />
 
-      <button
-        onClick={handleSubmit}
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          fontSize: '16px',
-          backgroundColor: 'skyblue',
-          color: 'black',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}
-      >
-        작성하기
-      </button>
+        <button onClick={handleSubmit} style={buttonStyle}>작성하기</button>
+      </div>
     </div>
   );
 }
+
+// 스타일 상수 정의
+const outerStyle = {
+  width: '100vw',
+  height: '100vh',
+  backgroundColor: 'black',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  color: 'white',
+  overflowY: 'auto',
+  padding: '40px',
+  boxSizing: 'border-box',
+};
+
+const innerStyle = {
+  width: '100%',
+  maxWidth: '800px',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  fontSize: '16px',
+  marginBottom: '20px',
+  borderRadius: '5px',
+  backgroundColor: '#222',
+  color: 'white',
+  border: '1px solid #555',
+};
+
+const textareaStyle = {
+  width: '100%',
+  height: '200px',
+  padding: '10px',
+  fontSize: '16px',
+  borderRadius: '5px',
+  backgroundColor: '#222',
+  color: 'white',
+  border: '1px solid #555',
+};
+
+const buttonStyle = {
+  marginTop: '20px',
+  padding: '10px 20px',
+  fontSize: '16px',
+  backgroundColor: 'skyblue',
+  color: 'black',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+};
