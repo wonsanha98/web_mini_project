@@ -8,6 +8,7 @@ import {useState} from 'react';
 // 이 코드는 로그인 시 서버에 POST 요청을 보내는 데 사용된다.
 import axios from 'axios';
 
+import '../styles/note.css'; // 추가
 // 이 파일에서 Login 컴포넌트를 기본 내보내기(export)한다.
 // 다른 컴포넌트나 라우터에서 import 해서 사용할 수 있다.
 export default function Login(){
@@ -19,6 +20,8 @@ export default function Login(){
   const [password, setPassword] = useState('');
   // 로그인 실패 시 화면에 표시할 에러 메시지를 위한 상태이다.
   const [error, setError] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+
 
   // 로그인 요청 처리 함수
   // 사용자가 로그인 버튼을 클릭했을 때 실행될 함수이다.
@@ -64,8 +67,8 @@ export default function Login(){
   // 로그인 버튼을 클릭 시 handleLogin() 함수가 실행된다.
   // 에러 메시지가 존재할 경우에만 붉은 글씨로 출력한다.
   return (
-    <div>
-      <h2>🔐 로그인</h2>
+    <div className="retro-container">
+      <h2>로그인</h2>
       <input
         type="text"
         placeholder="아이디"
@@ -78,7 +81,7 @@ export default function Login(){
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       /><br />
-      <button onClick={handleLogin}>로그인</button>
+      <button className="retro-button" onClick={handleLogin}>로그인</button>
       {error && <p style={{color: 'red'}}>{error}</p>}
     </div>
   );

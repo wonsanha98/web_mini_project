@@ -18,12 +18,6 @@ export default function PostWrite(){
     try{
       const token = sessionStorage.getItem('access_token');      
       // 토큰이 없는 경우 아예 요청을 보내지 않도록 한다.
-      // if(!token){
-      //   alert('로그인이 필요합니다.');
-      //   navigate('/login');
-      //   return;
-      // }
-
       // 백엔드 서버의 게시글 등록 API(POST /posts)에 요청을 보낸다.
       const response = await axios.post(
         'http://localhost:8000/posts',
@@ -49,8 +43,8 @@ export default function PostWrite(){
   };
 
   return(
-    <div>
-      <h2>✏️ 새 글 작성</h2>
+    <div className="retro-container">
+      <h2 >🖋 새 글 작성</h2>
       <input 
         type="text"
         placeholder="제목"
@@ -62,7 +56,7 @@ export default function PostWrite(){
         value={content}
         onChange={(e) => setContent(e.target.value)}
       /><br />
-      <button onClick={handleSubmit}>작성하기</button>
+      <button className="retro-button" onClick={handleSubmit}>작성하기</button>
     </div>
   )
 }

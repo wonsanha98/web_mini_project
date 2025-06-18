@@ -4,6 +4,10 @@
 // - useState: 컴포넌트의 상태(데이터)를 관리하기 위한 훅
 // - useEffct: 컴포넌트가 처음 렌더링되거나, 상태가 바뀌었을때 실행되는 부수 효과(예: API 호출)를 정의함
 import {useEffect, useState} from 'react';
+
+// import '../styles/note.css'; // 추가
+import '../styles/retro.css';
+
 // HTTP 요청을 쉽게 보내기 위한 라이브러리 axios를 불러온다.
 // 여기서는 백엔드 API로 데이터를 가져오기 위해 사용한다.
 import axios from 'axios';
@@ -44,13 +48,12 @@ function PostList(){
   // ->> <Link to={`/post/${post.id}`}> 로 변경, 더 자연스럽고 부드러운 연결
   // 제목과 작성자(author)를 함께 표시한다.
   return (
-    <div>
-      <h2>📃 게시글 목록</h2>
+    <div className="retro-container">
+      <h2>List</h2>
       <ul>
         {posts.map(post => (
           <li key={post.id}>
-            <Link to={`/post/${post.id}`}>  
-              <strong>{post.title}</strong> - {post.author}
+            <Link to={`/post/${post.id}`}><strong>{post.title}</strong>  ✐{post.author}
             </Link>
           </li>
         ))}

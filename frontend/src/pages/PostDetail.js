@@ -122,94 +122,99 @@ export default function PostDetail(){
     });
   };
 
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
+  useEffect(() => {
+    setTimeout(() => {
+      axios.get(`http://localhost:8000/posts/${id}`)
+        .then((res) => {
+          setPost(res.data);
+        });
+  
+      axios.get(`http://localhost:8000/posts/${id}/comments`)
+        .then((res) => {
+          setComments(res.data);
+        });
+  
+      setLoading(false); // 딜레이 후 로딩 종료
+    }, 5000); // 5초 딜레이
+  }, [id]);
+  
   if (error) return <p>{error}</p>;
   if (!post) return <p>⏳ 게시글을 불러오는 중...</p>
 
 
   return (
-    <div>
-      <h2>{post.title}</h2>
-      <p><strong>작성자:</strong> {post.author}</p>
-      <hr />
-      <p>{post.content}</p>
-      {post.user_id === currentUserId && (
+    <div className="retro-container">
+      {loading ? (
+        <p style={{ fontSize: '1rem' }}>⏳ 게시글을 불러오는 중입니다...</p>
+      ) : (
         <>
-          <Link to={`/edit/${post.id}`}>
-            <button>✏️ 수정</button>
-          </Link>
-          <button onClick={handleDelete} style={{marginTop: '20px', color: 'red'}}>
-            🗑 삭제하기
-          </button>
+          <h2>{post.title}</h2>
+          <p><strong>작성자:</strong> {post.author}</p>
+          <hr />
+          <p>{post.content}</p>
+  
+          {post.user_id === currentUserId && (
+            <>
+              <Link to={`/edit/${post.id}`}>
+                <button className="retro-button">수정</button>
+              </Link>
+              <button className="retro-button" onClick={handleDelete} style={{ marginTop: '20px', color: 'red' }}>
+                삭제하기
+              </button>
+            </>
+          )}
+  
+          <h3>🗨 댓글</h3>
+          <ul>
+            {comments.map((c, index) => (
+              <li key={index}>
+                <strong>{c.author}</strong>:{" "}
+                {editingCommentId === c.id ? (
+                  <>
+                    <textarea 
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                    />
+                    <button className="retro-button" onClick={() => handleCommentUpdate(c.id)}>완료</button>
+                  </>
+                ) : (
+                  c.content
+                )}
+                {c.user_id === currentUserId && (
+                  <>
+                    <button className="retro-button" onClick={() => startEdit(c.id, c.content)}>수정</button>
+                    <button className="retro-button" onClick={() => handleCommentDelete(c.id)}>삭제</button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+  
+          {currentUserId ? (
+            <>
+              <h4>댓글 작성</h4>
+              <input 
+                type="text"
+                placeholder="제목"
+                value={commentAuthor}
+                onChange={(e) => setCommentAuthor(e.target.value)}
+              /><br />
+              <textarea 
+                placeholder="내용"
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+              /><br />
+              <button className="retro-button" onClick={handleCommentSubmit} style={{ marginTop: '10px' }}>
+                등록
+              </button>
+            </>
+          ) : (
+            <p style={{ color: 'gray' }}>댓글 작성을 위해 로그인해주세요.</p>
+          )}
         </>
       )}
-      {/* 댓글 출력 UI 추가
-      댓글 목록을 화면에 출력한다. 작성자 이름과 댓글 내용을 나열한다. */}
-      <h3>💬 댓글</h3>
-      <ul>
-        {comments.map((c, index) => (
-          <li key={index}>
-            <strong>{c.author}</strong>:{" "}
-            {editingCommentId === c.id ? (
-              <>
-                <textarea 
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                />
-                <button onClick={() => handleCommentUpdate(c.id)}>완료</button>
-              </>
-            ) : (
-              c.content
-            )}
-
-            {c.user_id && currentUserId && c.user_id === currentUserId && (
-              <>
-                <button 
-                onClick={() => startEdit(c.id, c.content)}
-                style={{marginLeft: '10px'}}>✏️ 수정</button>
-                <button 
-                onClick={() => handleCommentDelete(c.id)}
-                style={{color: 'red', marginLeft: '10px'}}>🗑 삭제</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-      
-      {/* 댓글 입력 UI 추가
-      댓글 작성 폼이다. 작성자와 내용 입력 후 '등록'버튼 클릭시 handleCommentSubmit()이 실행된다. */}
-      {/* <h4>댓글 작성</h4>
-      <input
-        type="text"
-        placeholder="작성자"
-        value={commentAuthor}
-        onChange={(e) => setCommentAuthor(e.target.value)}
-      /><br />
-      <textarea
-        placeholder="내용"
-        value={commentContent}
-        onChange={(e) => setCommentContent(e.target.value)}
-      ></textarea><br />
-      <button onClick={handleCommentSubmit} style={{marginTop: '10px'}}>등록</button> */}
-      {currentUserId ? (
-        <>
-          <h4>댓글 작성</h4>
-          <input 
-            type="text"
-            placeholder="작성자"
-            value={commentAuthor}
-            onChange={(e) => setCommentAuthor(e.target.value)}
-          /><br />
-          <textarea 
-            placeholder="내용"
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-          /><br />
-          <button onClick={handleCommentSubmit} style={{marginTop:'10px'}}>등록</button>
-        </>
-      ) : (
-        <p style={{color:'gray'}}>댓글 작성을 위해 로그인해주세요.</p>
-        )}
     </div>
-  )
+  );
 }

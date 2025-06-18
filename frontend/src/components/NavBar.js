@@ -21,15 +21,15 @@ export default function NavBar() {
   };
 
   return (
-    <nav style={{ marginBottom: '20px' }}>
-      <Link to="/">목록</Link> |{' '}
-      <Link to="/write">글쓰기</Link> |{' '}
+    <nav className="retro-navbar">
+      <Link to="/">✉ 목록</Link> |{' '}
+      <Link to="/write">🖋 글쓰기</Link> |{' '}
       {isAuthenticated ? (
-        <button onClick={handleLogout} style={{ marginLeft: '10px' }}>로그아웃</button>
+        <button className="retro-button" onClick={handleLogout} style={{ marginLeft: '10px' }}>로그아웃</button>
       ) : (
         <>
-          <Link to="/login">로그인</Link> |{' '}
-          <Link to="/register">회원가입</Link>
+          <Link to="/login"> 로그인</Link> |{' '}
+          <Link to="/register">✎회원가입</Link>
         </>
       )}
     </nav>

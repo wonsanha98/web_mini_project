@@ -69,7 +69,7 @@ export default function PostEdit(){
     // 상단에 수정 페이지 제목을 보여준다.
     // 폼을 생성하고, 제출 시 위의 handleSubmit 함수가 실행되게 한다.
     return (
-        <div>
+        <div className="retro-container">
             <h2>✏️ 게시글 수정</h2>
             <form onSubmit={handleSubmit}>
                 <input
