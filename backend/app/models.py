@@ -46,8 +46,6 @@ class Post(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="posts")
-    image_url = Column(String, nullable=True)  # 추가
-    image_filename = Column(String) # 추가
 
 # 댓글(Comment)모델 추가
 # SQLAlchemy ORM에서 댓글 테이블 생성을 위한 Comment 모델 클래스를 정의한다.

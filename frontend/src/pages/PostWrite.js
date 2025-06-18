@@ -8,8 +8,6 @@ import RotatingSphere2 from '../components/RotatingSphere2';
 export default function PostWrite() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [image, setImage] = useState(null);   // 추가
-
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
@@ -20,25 +18,16 @@ export default function PostWrite() {
         alert("제목과 내용을 모두 입력해주세요.");
         return;
       }
-
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      formData.append('author', '작성자닉네임');  // 필요시 수정
-      if (image) formData.append('file', image);
-
       await axios.post(
         'http://localhost:8000/posts',
-        // {
-          // title,
-          // content,
-          // author: '작성자닉네임',       
-        // },
-        formData,
+        {
+          title,
+          content,
+          author: '작성자닉네임',
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
           },
         }
       );
@@ -70,13 +59,6 @@ export default function PostWrite() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           style={textareaStyle}
-        /><br />
-
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImage(e.target.files[0])}
-          style={{ color: 'white', marginBottom: '20px' }}
         /><br />
 
         <button onClick={handleSubmit} 

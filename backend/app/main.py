@@ -10,7 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware # CORS 관련 모듈 추가
 # engine은 SQLite 데이터베이스에 연결된 객체이다. 여기에 테이블을 생성한다.
 from .database import engine
 
-from fastapi.staticfiles import StaticFiles
 
 # app/routes.py 파일에 있는 router 객체를 가져온다.
 # 이 router는 @router.get(...), @router.post(...) 같은 경로 설정을 모아둔 그룹이다.
@@ -30,8 +29,6 @@ from . import auth_routes
 # 이후 이 app에 다양한 설정(라우팅, 미들웨어, 오류 처리 등)을 붙여나간다.
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # CORS 설정
 # 해당 코드가 없으먄 React -> FastAPI 요청 시 CORS 에러 발생
 app.add_middleware(
@@ -42,6 +39,7 @@ app.add_middleware(
     allow_methods=["*"],                     # 모든 HTTP 메서드 허용
     allow_headers=["*"],                     # 모든 헤더 허용
 )
+
 
 # models.py에 정의한 모든 클래스(Post 등)를 테이블로 변환하여 DB에 실제 생성한다.
 # 이미 존재하는 테이블은 건너뛴다. 
