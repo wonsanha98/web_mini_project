@@ -91,18 +91,6 @@ def create_post(
         "image_url": f"/static/{db_post.image_filename}" if db_post.image_filename else None
     }
 
-# @router.post("/upload-image/")
-# async def upload_image(file: UploadFile = File(...)):
-#     file_ext = file.filename.split(".")[-1]
-#     unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
-#     save_path = f"static/images/{unique_filename}"
-
-#     with open(save_path, "wb") as buffer:
-#         shutil.copyfileobj(file.file, buffer)
-    
-#     image_url = f"/static/images/{unique_filenamd}"
-#     return {"image_url": image_url}
-
 
 @router.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(
@@ -121,36 +109,6 @@ def delete_post(
     db.commit()
     return
 
-
-# @router.patch("/posts/{id}", response_model=schemas.PostResponse)
-# async def update_post(
-#     post_id: int,
-#     title: str = Form(...),
-#     content: str = Form(...),
-#     file: Optional[UploadFile] = File(None),
-#     db: Session = Depends(get_db),
-#     current_user: models.User = Depends(security.get_current_user)
-# ):
-#     post = db.query(models.Post).filter(models.Post.id == post_id).first()
-#     if not post:
-#         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
-#     if post.user_id != current_user.id:
-#         raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
-
-#     post.title = title
-#     post.content = content
-
-#     if file:
-#         ext = file.filename.split('.')[-1]
-#         filename = f"{uuid.uuid4().hex}.{ext}"
-#         save_path = os.path.join(UPLOAD_DIR, filename)
-#         with open(save_path, "wb") as buffer:
-#             shutil.copyfileobj(file.file, buffer)
-#         post.image_filename = filename
-
-#     db.commit()
-#     db.refresh(post)
-#     return post
     
 @router.patch("/posts/{id}", response_model=schemas.PostResponse)
 async def update_post(
