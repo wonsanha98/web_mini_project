@@ -2,9 +2,43 @@
 
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import { Sphere } from '@react-three/drei';
+
 import axios from 'axios';
 
 import RotatingSphere from '../components/RotatingSphere';
+
+function ThreeBackground() {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: 0,
+    }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+        <ambientLight intensity={0.3} />
+        <pointLight position={[10, 10, 10]} />
+        
+        {/* 내부에서 보는 wireframe 구 */}
+        <Sphere args={[10, 64, 64]} scale={[-1, 1, 1]}>
+          <meshBasicMaterial color="skyblue" wireframe transparent opacity={0.15} />
+        </Sphere>
+
+        <OrbitControls 
+          enableZoom={false} 
+          enablePan={false} 
+          rotateSpeed={0.6}
+          autoRotate={false}
+        />
+      </Canvas>
+    </div>
+  );
+}
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -101,6 +135,8 @@ export default function PostDetail() {
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
+    <>
+    <ThreeBackground />
     <div style={outerStyle}>
       <div style={innerStyle}>
         {!post ? (
@@ -109,12 +145,23 @@ export default function PostDetail() {
           </div>
         ) : (
           <>
-            <h2 style={{ color: 'skyblue', marginBottom: '10px',  }}>{post.title}</h2>
+            <h2 style={{ 
+              color: 'skyblue', 
+              marginBottom: '10px',  
+              textAlign: 'center' 
+              }}>{post.title}</h2>
             <div style={{ textAlign: 'right', marginBottom: '10px' }}>
               {/* <strong>작성자:</strong> {post.author} */}
               <strong>{post.author}</strong>
             </div>
             <hr style={{ borderColor: '#444' }} />
+            {post.image_url && (
+              <img
+                src={`http://localhost:8000${post.image_url}`}
+                alt="게시글 이미지"
+                style={{ maxWidth: '100%', marginTop: '20px' }}
+              />
+            )}
             <p style={{ marginTop: '10px', whiteSpace: 'pre-line'}}>{post.content}</p>
 
             {post.user_id === currentUserId && (
@@ -159,7 +206,7 @@ export default function PostDetail() {
                 <h4 style={{ color: 'skyblue' }}>댓글 작성</h4>
                 <input
                   type="text"
-                  placeholder="작성자"
+                  placeholder="제목"
                   value={commentAuthor}
                   onChange={(e) => setCommentAuthor(e.target.value)}
                   style={inputStyle}
@@ -179,6 +226,7 @@ export default function PostDetail() {
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -203,6 +251,11 @@ const innerStyle = {
   maxWidth: '800px',
   display: 'flex',
   flexDirection: 'column',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',  // 반투명 검정 배경
+  padding: '30px',
+  borderRadius: '10px',
+  boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)', // 부드러운 그림자
+  backdropFilter: 'blur(2px)',             // 배경 흐림 효과 (옵션)
 };
 
 const inputStyle = {

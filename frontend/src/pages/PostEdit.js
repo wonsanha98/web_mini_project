@@ -26,37 +26,55 @@ export default function PostEdit() {
     setPost(prev => ({
       ...prev,
       [name]: value
-    }));
-  };
+  }));
+};
 
-  const token = sessionStorage.getItem('access_token');
+const token = sessionStorage.getItem('access_token');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    if (!post.title.trim() || !post.content.trim()) {
-      alert("제목과 내용을 모두 입력해주세요.");
-      return;
-    }
+const [file, setFile] = useState(null);
 
-    try {
-      await axios.patch(`http://localhost:8000/posts/${id}`, post, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
+const handleFileChange = (e) => {
+  setFile(e.target.files[0]);
+};
 
-      alert("게시글이 수정되었습니다.");
-      navigate(`/post/${id}`);
-    } catch {
-      alert("수정 중 오류가 발생했습니다.");
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!post.title.trim() || !post.content.trim()) {
+    alert("제목과 내용을 모두 입력해주세요.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("title", post.title);
+  formData.append("content", post.content);
+  if (file) {
+    formData.append("file", file);
+  }
+
+  try {
+    await axios.patch(`http://localhost:8000/posts/${id}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      }
+    }).then((response) => {
+      setPost(response.data);  // 또는 navigate(`/post/${id}`) 전에 강제로 리렌더링
+      navigate(`/post/${id}`); // 새 상세 페이지로 이동
+    });
+
+    alert("게시글이 수정되었습니다.");
+    navigate(`/post/${id}`);
+  } catch {
+    alert("수정 중 오류가 발생했습니다.");
+  }
+};
 
   return (
     <div style={outerStyle}>
       <div style={innerStyle}>
-        <RotatingSphere2 />
+        {/* <RotatingSphere2 /> */}
         <h2 style={{ color: 'skyblue', marginBottom: '30px' }}>게시글 수정</h2>
 
         <input
@@ -67,7 +85,13 @@ export default function PostEdit() {
           onChange={handleChange}
           style={inputStyle}
         /><br />
-
+        {post.image_url && (
+          <img
+            src={`http://localhost:8000${post.image_url}`}
+            alt="게시글 이미지"
+            style={{ maxWidth: '100%', marginTop: '20px' }}
+          />
+        )}
         <textarea
           name="content"
           placeholder="내용을 입력하세요"
@@ -75,6 +99,11 @@ export default function PostEdit() {
           onChange={handleChange}
           style={textareaStyle}
         /><br />
+          <input
+          type="file"
+          onChange={handleFileChange}
+          style={{ marginTop: '20px', color: 'white' }}
+        />
 
         <button type="submit" onClick={handleSubmit} style={buttonStyle}>수정 완료</button>
       </div>
