@@ -21,6 +21,8 @@ class PostCreate(PostBase):
 class PostResponse(PostBase):
     id: int
     user_id: int    # 현재 로그인한 사용자 
+    image_url: Optional[str] = None  # 추가
+
 
     # SQLAlchemy 모델을 반환할 때, 자동으로 dict처럼 변환해주는 설정이다.
     # 이 설정이 없으면 FastAPI가 응답을 직렬화할 때 오류가 날 수 있다.
@@ -35,7 +37,7 @@ class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     author: Optional[str] = None
-
+    image_url: Optional[str] = None  #추가
 
 # class CommentBase(BaseModel):
 #     content: str

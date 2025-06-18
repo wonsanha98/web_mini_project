@@ -1,103 +1,94 @@
 // src/pages/PostList.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { a, useSpring } from '@react-spring/three';
+import { OrbitControls } from '@react-three/drei';
 
-function PostList() {
-  const [posts, setPosts] = useState([]);
+function CircularPostPoint({ position, post, currentUserId }) {
+  const navigate = useNavigate();
+  const [hovered, setHovered] = useState(false);
 
-  useEffect(() => {
-    axios.get('http://localhost:8000/posts/')
-      .then(response => {
-        setPosts(response.data);
-      })
-      .catch(error => {
-        console.error('게시글 불러오기 오류:', error);
-      });
-  }, []);
+  const isMine = Number(currentUserId) && post.user_id === Number(currentUserId);
+
+  const { scale } = useSpring({
+    scale: hovered ? 1.5 : 1,
+    config: { tension: 200, friction: 15 }
+  });
 
   return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'black',
-      color: 'white',
-      padding: '40px',
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      overflowY: 'auto'
-    }}>
-      <div style={{ color: 'skyblue', marginBottom: '80px' }}></div>
-      <ul style={{ listStyle: 'none', padding: 0, width: '60%' }}>
-        {posts.map(post => (
-          <li
-            key={post.id}
-            style={{
-              marginBottom: '20px',
-              borderBottom: '1px solid rgba(255,255,255,0.2)',
-              paddingBottom: '10px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              transition: 'transform 0.2s ease, background-color 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.02)';
-              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
-            {/* 왼쪽: 파란 구 + 제목 */}
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {/* 파란 구 형태의 점 */}
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle at 30% 30%, #00bfff, #007fff)',
-                  boxShadow: '0 0 6px #00bfff',
-                  marginRight: '10px',
-                  flexShrink: 0,
-                }}
-              />
-              {/* 게시글 제목 */}
-              <Link
-                to={`/post/${post.id}`}
-                style={{
-                  color: 'white',
-                  textDecoration: 'none',
-                  fontSize: '18px',
-                  transition: 'color 0.2s ease, text-shadow 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'skyblue';
-                  e.currentTarget.style.textShadow = '0 0 8px rgba(135, 206, 250, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'white';
-                  e.currentTarget.style.textShadow = 'none';
-                }}
-              >
-                <div style={{ color: 'skyblue' }}>{post.title}</div>
-              </Link>
-            </div>
-
-            {/* 오른쪽: 작성자 */}
-            <span style={{ color: 'gray', fontSize: '14px', flexShrink: 0 }}>
-              {post.author}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <a.mesh
+      position={position}
+      scale={scale}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+      onClick={() => navigate(`/post/${post.id}`)}
+    >
+      <sphereGeometry args={[0.15, 32, 32]} />
+      <meshStandardMaterial
+        color={isMine ? (hovered ? '#ffb300' : '#ffd54f') : (hovered ? '#b3e5fc' : 'skyblue')}
+      />
+    </a.mesh>
   );
 }
 
-export default PostList;
+
+function generateCirclePositions(count, radius = 5) {
+  const positions = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const x = radius * Math.cos(angle);
+    const y = 0;
+    const z = radius * Math.sin(angle);
+    positions.push([x, y, z]);
+  }
+  return positions;
+}
+
+function CircularPostGroup({ posts, currentUserId }) {
+  const groupRef = useRef();
+  const positions = generateCirclePositions(posts.length, 4);
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += 0.001;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {posts.map((post, i) => (
+        <CircularPostPoint
+          key={post.id}
+          post={post}
+          position={positions[i]}
+          currentUserId={currentUserId}
+        />
+      ))}
+    </group>
+  );
+}
+
+export default function PostList() {
+  const [posts, setPosts] = useState([]);
+  const currentUserId = sessionStorage.getItem('user_id'); // 또는 context 등
+  console.log('currentUserId:', currentUserId);
+  useEffect(() => {
+    axios.get('http://localhost:8000/posts/')
+      .then(res => setPosts(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: 'black' }}>
+      <Canvas camera={{ position: [0, 2, 10], fov: 60 }}>
+        <ambientLight intensity={0.3} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <OrbitControls />
+        <CircularPostGroup posts={posts} currentUserId={currentUserId} />
+      </Canvas>
+    </div>
+  );
+}

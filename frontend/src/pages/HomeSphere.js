@@ -26,7 +26,7 @@ function PostPoint({ position, post }) {
         receiveShadow
         scale={scale}
       >
-        <sphereGeometry args={[0.1, 64, 64]} />
+        <sphereGeometry args={[0.2, 64, 64]} />
         <meshStandardMaterial
           color={hovered ? 'white' : 'skyblue'}
           metalness={0.5}
@@ -128,4 +128,4 @@ export default function HomeSphere() {
       </div>
     );
   }
-  
+ 
