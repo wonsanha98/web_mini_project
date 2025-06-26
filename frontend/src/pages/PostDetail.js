@@ -1,215 +1,307 @@
 // src/pages/PostDetail.js
 
-// 3차
+import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
-import {useParams} from 'react-router-dom';
-import {useEffect, useState} from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import { Sphere } from '@react-three/drei';
+
 import axios from 'axios';
-import {Link} from 'react-router-dom'; 
 
-export default function PostDetail(){
-  const{id} = useParams();                
-  const[post, setPost] = useState(null);
-  const[error, setError] = useState(null);
+import RotatingSphere from '../components/RotatingSphere';
 
-  // 상태(state) 변수 추가
-  // comments: 현재 게시글에 달린 댓글 목록을 저장할 상태 변수이다. 초기값은 빈 배열이다.
-  const[comments, setComments] = useState([]);
-  // 댓글 작성 시 입력할 작성자명과 내용을 저장할 상태 변수이다.
-  const[commentAuthor, setCommentAuthor] = useState('');
-  const[commentContent, setCommentContent] = useState('');
+function ThreeBackground() {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: 0,
+    }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+        <ambientLight intensity={0.3} />
+        <pointLight position={[10, 10, 10]} />
+        
+        {/* 내부에서 보는 wireframe 구 */}
+        <Sphere args={[10, 64, 64]} scale={[-1, 1, 1]}>
+          <meshBasicMaterial color="skyblue" wireframe transparent opacity={0.15} />
+        </Sphere>
 
-  const[editingCommentId, setEditingCommentId] = useState(null);
-  const[editedContent, setEditedContent] = useState('');
+        <OrbitControls 
+          enableZoom={false} 
+          enablePan={false} 
+          rotateSpeed={0.6}
+          autoRotate={false}
+        />
+      </Canvas>
+    </div>
+  );
+}
+
+export default function PostDetail() {
+  const { id } = useParams();
+  const [post, setPost] = useState(null);
+  const [error, setError] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentAuthor, setCommentAuthor] = useState('');
+  const [commentContent, setCommentContent] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedContent, setEditedContent] = useState('');
 
   const token = sessionStorage.getItem('access_token');
   const storedUserId = sessionStorage.getItem('user_id');
-  const currentUserId = storedUserId && !isNaN(Number(storedUserId)) 
-  ? Number(storedUserId) 
-  : null;
+  const currentUserId = storedUserId && !isNaN(Number(storedUserId)) ? Number(storedUserId) : null;
+
+  useEffect(() => {
+    axios.get(`http://localhost:8000/posts/${id}`)
+      .then(response => setPost(response.data))
+      .catch(() => setError('해당 게시글을 불러올 수 없습니다.'));
+
+    axios.get(`http://localhost:8000/posts/${id}/comments`)
+      .then(response => setComments(response.data))
+      .catch(error => console.error("댓글 불러오기 실패:", error));
+  }, [id]);
+
+  const handleDelete = () => {
+    axios.delete(`http://localhost:8000/posts/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(() => {
+        alert("삭제가 완료되었습니다.");
+        window.location.href = '/';
+      })
+      .catch(error => {
+        console.error('삭제 오류:', error);
+        setError('삭제 중 문제가 발생했습니다.');
+      });
+  };
 
   const startEdit = (commentId, content) => {
     setEditingCommentId(commentId);
     setEditedContent(content);
   };
 
-
-  useEffect(() => {
-    axios.get(`http://localhost:8000/posts/${id}`)
-    .then(response => setPost(response.data))
-    .catch(err => setError('해당 게시글을 불러올 수 없습니다.'));
-
-
-    // useEffect 내부에 댓글 목록 불러오기 추가
-    // 해당 게시글의 댓글 목록을 백엔드에서 불러와 comments 상태에 저장한다.
-    // 게시글 상세 정보와 함께 한 번 호출되도록 useEffect 내부에 작성한다.
-    axios.get(`http://localhost:8000/posts/${id}/comments`)
-    .then(response => setComments(response.data))
-    .catch(error => console.error("댓글 불러오기 실패:", error));
-  }, [id]);
-  
-
-  const handleDelete = () => {
-    axios.delete(`http://localhost:8000/posts/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    .then(() => {
-      alert("삭제가 완료되었습니다.");
-      window.location.href = '/';
-    }) 
-    .catch(error => {
-      console.error('삭제 오류:', error);
-      setError('삭제 중 문제가 발생했습니다.');
-    });
-  }
-
   const handleCommentUpdate = (commentId) => {
     axios.patch(`http://localhost:8000/comments/${commentId}`, {
-      content: editedContent, 
+      content: editedContent,
     }, {
-      headers: {Authorization: `Bearer ${token}`},
+      headers: { Authorization: `Bearer ${token}` },
     })
-    .then(() => {
-      setEditingCommentId(null);
-      setEditedContent('');
-      return axios.get(`http://localhost:8000/posts/${id}/comments`);
-    })
-    .then(response => setComments(response.data))
-    .catch(error => console.error("댓글 수정 실패:", error));
+      .then(() => {
+        setEditingCommentId(null);
+        setEditedContent('');
+        return axios.get(`http://localhost:8000/posts/${id}/comments`);
+      })
+      .then(response => setComments(response.data))
+      .catch(error => console.error("댓글 수정 실패:", error));
   };
 
-
-  // 댓글 작성 함수 추가
-  // 댓글 등록 버튼 클릭 시 실행된다.
-  // commentAuthor, commentContent 값이 비어 있으면 경고창을 띄운다.
-  // POST 요청으로 댓글을 전송하고, 작성 후에는 입력창을 비우고 댓글 목록을 다시 불러온다.
   const handleCommentSubmit = () => {
-    if(!commentAuthor || !commentContent){
-      alert("작성자와 내용을 모두 입력해주세요.");
+    if (!commentAuthor.trim() || !commentContent.trim()) {
+      alert("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
     axios.post(`http://localhost:8000/posts/${id}/comments`, {
       author: commentAuthor,
       content: commentContent,
-      user_id: currentUserId        // user_id 추가
+      user_id: currentUserId
     })
-    .then(() => {
-      setCommentAuthor('');
-      setCommentContent('');
-      return axios.get(`http://localhost:8000/posts/${id}/comments`);
-    })
-    .then(response => setComments(response.data))
-    .catch(error => console.error("댓글 작성 실패:", error));
+      .then(() => {
+        setCommentAuthor('');
+        setCommentContent('');
+        return axios.get(`http://localhost:8000/posts/${id}/comments`);
+      })
+      .then(response => setComments(response.data))
+      .catch(error => console.error("댓글 작성 실패:", error));
   };
 
   const handleCommentDelete = (commentId) => {
     axios.delete(`http://localhost:8000/posts/${id}/comments/${commentId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
+      headers: { Authorization: `Bearer ${token}` },
     })
-    .then(() => {
-      // 삭제 후 댓글 목록 다시 불러오기
-      return axios.get(`http://localhost:8000/posts/${id}/comments`);
-    })
-    .then(response => setComments(response.data))
-    .catch(error => {
-      console.error("댓글 삭제 실패:", error);
-      alert("댓글 삭제 중 오류가 발생했습니다.");
-    });
+      .then(() => {
+        return axios.get(`http://localhost:8000/posts/${id}/comments`);
+      })
+      .then(response => setComments(response.data))
+      .catch(error => {
+        console.error("댓글 삭제 실패:", error);
+        alert("댓글 삭제 중 오류가 발생했습니다.");
+      });
   };
 
-
-  if (error) return <p>{error}</p>;
-  if (!post) return <p>⏳ 게시글을 불러오는 중...</p>
-
+  if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
-    <div>
-      <h2>{post.title}</h2>
-      <p><strong>작성자:</strong> {post.author}</p>
-      <hr />
-      <p>{post.content}</p>
-      {post.user_id === currentUserId && (
-        <>
-          <Link to={`/edit/${post.id}`}>
-            <button>✏️ 수정</button>
-          </Link>
-          <button onClick={handleDelete} style={{marginTop: '20px', color: 'red'}}>
-            🗑 삭제하기
-          </button>
-        </>
-      )}
-      {/* 댓글 출력 UI 추가
-      댓글 목록을 화면에 출력한다. 작성자 이름과 댓글 내용을 나열한다. */}
-      <h3>💬 댓글</h3>
-      <ul>
-        {comments.map((c, index) => (
-          <li key={index}>
-            <strong>{c.author}</strong>:{" "}
-            {editingCommentId === c.id ? (
-              <>
-                <textarea 
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                />
-                <button onClick={() => handleCommentUpdate(c.id)}>완료</button>
-              </>
-            ) : (
-              c.content
+    <>
+    <ThreeBackground />
+    <div style={outerStyle}>
+      <div style={innerStyle}>
+        {!post ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+            <RotatingSphere />
+          </div>
+        ) : (
+          <>
+            <h2 style={{ 
+              color: 'skyblue', 
+              marginBottom: '10px',  
+              textAlign: 'center' 
+              }}>{post.title}</h2>
+            <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+              {/* <strong>작성자:</strong> {post.author} */}
+              <strong>{post.author}</strong>
+            </div>
+            <hr style={{ borderColor: '#444' }} />
+            {post.image_url && (
+              <img
+                src={`http://localhost:8000${post.image_url}`}
+                alt="게시글 이미지"
+                style={{ maxWidth: '100%', marginTop: '20px' }}
+              />
+            )}
+            <p style={{ marginTop: '10px', whiteSpace: 'pre-line'}}>{post.content}</p>
+
+            {post.user_id === currentUserId && (
+              <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                <Link to={`/edit/${post.id}`}>
+                  <button style={buttonStyle}>수정</button>
+                </Link>
+                <button onClick={handleDelete} style={buttonStyle}>삭제</button>
+              </div>
             )}
 
-            {c.user_id && currentUserId && c.user_id === currentUserId && (
-              <>
-                <button 
-                onClick={() => startEdit(c.id, c.content)}
-                style={{marginLeft: '10px'}}>✏️ 수정</button>
-                <button 
-                onClick={() => handleCommentDelete(c.id)}
-                style={{color: 'red', marginLeft: '10px'}}>🗑 삭제</button>
-              </>
+            <h3 style={{ marginTop: '40px', color: 'skyblue' }}>댓글</h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {comments.map((c) => (
+                <li key={c.id} style={{ marginBottom: '25px', borderBottom: '1px solid #444', paddingBottom: '10px' }}>
+                  <p style={{ color: 'skyblue', fontWeight: 'bold', marginBottom: '5px' }}>{c.author}</p>
+                  {editingCommentId === c.id ? (
+                    <>
+                      <textarea
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                        style={textareaStyleSmall}
+                      />
+                      <button onClick={() => handleCommentUpdate(c.id)} style={smallButtonStyle}>완료</button>
+                    </>
+                  ) : (
+                    <p style={{ marginBottom: '5px' }}>{c.content}</p>
+                  )}
+
+                  {c.user_id === currentUserId && (
+                    <div style={{ marginTop: '5px' }}>
+                      <button onClick={() => startEdit(c.id, c.content)} style={smallButtonStyle}>수정</button>
+                      <button onClick={() => handleCommentDelete(c.id)} style={smallButtonStyle}>삭제</button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {currentUserId ? (
+              <div style={{ marginTop: '30px' }}>
+                <h4 style={{ color: 'skyblue' }}>댓글 작성</h4>
+                <input
+                  type="text"
+                  placeholder="제목"
+                  value={commentAuthor}
+                  onChange={(e) => setCommentAuthor(e.target.value)}
+                  style={inputStyle}
+                /><br />
+                <textarea
+                  placeholder="내용"
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.target.value)}
+                  style={textareaStyleSmall}
+                /><br />
+                <button onClick={handleCommentSubmit} style={buttonStyle}>등록</button>
+              </div>
+            ) : (
+              <p style={{ color: 'gray', marginTop: '20px' }}>댓글 작성을 위해 로그인해주세요.</p>
             )}
-          </li>
-        ))}
-      </ul>
-      
-      {/* 댓글 입력 UI 추가
-      댓글 작성 폼이다. 작성자와 내용 입력 후 '등록'버튼 클릭시 handleCommentSubmit()이 실행된다. */}
-      {/* <h4>댓글 작성</h4>
-      <input
-        type="text"
-        placeholder="작성자"
-        value={commentAuthor}
-        onChange={(e) => setCommentAuthor(e.target.value)}
-      /><br />
-      <textarea
-        placeholder="내용"
-        value={commentContent}
-        onChange={(e) => setCommentContent(e.target.value)}
-      ></textarea><br />
-      <button onClick={handleCommentSubmit} style={{marginTop: '10px'}}>등록</button> */}
-      {currentUserId ? (
-        <>
-          <h4>댓글 작성</h4>
-          <input 
-            type="text"
-            placeholder="작성자"
-            value={commentAuthor}
-            onChange={(e) => setCommentAuthor(e.target.value)}
-          /><br />
-          <textarea 
-            placeholder="내용"
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-          /><br />
-          <button onClick={handleCommentSubmit} style={{marginTop:'10px'}}>등록</button>
-        </>
-      ) : (
-        <p style={{color:'gray'}}>댓글 작성을 위해 로그인해주세요.</p>
+          </>
         )}
+      </div>
     </div>
-  )
+    </>
+  );
 }
+
+// 스타일 정의
+const outerStyle = {
+  width: '100vw',
+  minHeight: '100vh',
+  backgroundColor: 'black',
+  color: 'white',
+  padding: '40px',
+  paddingTop: '150px', // 상단 여백 추가
+  boxSizing: 'border-box',
+  overflowY: 'auto', //  스크롤 가능하도록
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  alignItems: 'flex-start', // 상단 정렬
+};
+
+const innerStyle = {
+  width: '100%',
+  maxWidth: '800px',
+  display: 'flex',
+  flexDirection: 'column',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',  // 반투명 검정 배경
+  padding: '30px',
+  borderRadius: '10px',
+  boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)', // 부드러운 그림자
+  backdropFilter: 'blur(2px)',             // 배경 흐림 효과 (옵션)
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  fontSize: '16px',
+  marginBottom: '10px',
+  borderRadius: '5px',
+  backgroundColor: '#222',
+  color: 'white',
+  border: '1px solid #555',
+};
+
+const textareaStyleSmall = {
+  width: '100%',
+  height: '80px',
+  padding: '10px',
+  fontSize: '16px',
+  borderRadius: '5px',
+  backgroundColor: '#222',
+  color: 'white',
+  border: '1px solid #555',
+  marginBottom: '10px',
+};
+
+const buttonStyle = {
+  marginLeft: '10px',
+  marginTop: '10px',
+  padding: '8px 16px',
+  fontSize: '14px',
+  backgroundColor: 'skyblue',
+  color: 'black',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+};
+
+const smallButtonStyle = {
+  marginRight: '6px',
+  marginTop: '6px',
+  padding: '4px 10px',
+  fontSize: '12px',
+  backgroundColor: 'skyblue',
+  color: 'black',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+

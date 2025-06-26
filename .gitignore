@@ -29,6 +29,9 @@ __pycache__/
 # DB 파일 (로컬용)
 backend/posts.db
 
+# 이미지 업로드 폴더 (업로드 파일 Git에서 제외)
+backend/static/images/
+
 # IDE 및 기타 환경 설정
 .vscode/
 *.swp

@@ -12,6 +12,7 @@ import PrivateRoute from './components/PrivateRoute';
 
 // 만든 페이지 import
 // 만든 각각의 페이지 컴포넌트들을 불러온다.
+import HomeSphere from './pages/HomeSphere';
 import PostList from './pages/PostList';
 import PostDetail from './pages/PostDetail';
 import PostWrite from './pages/PostWrite';
@@ -21,13 +22,14 @@ import Register from './pages/Register';
 // 게시글 수정 컴포넌트(PostEdit)를 사용하기 위해 import 한다.
 import PostEdit from './pages/PostEdit';
 
-import {Link} from 'react-router-dom';
+// import {Link} from 'react-router-dom';
 
 import NavBar from './components/NavBar';
 
 // APP 함수형 컴포넌트이다.
 // 이 컴포넌트는 React 앱의 루트 컴포넌트, 즉 가장 상위에 있는 컴포넌트이다.
 function App(){
+  document.body.style.overflowY = 'scroll';
   return(
     //<Router>는 모든 라우팅 기능이 동작할 수 있도록 하는 라우팅 컨테이너이다.
     //이 안에 있어야 Route, Link, useParams 등이 정상적으로 작동한다.
@@ -43,7 +45,8 @@ function App(){
           /write, /login, /register 각각은 글쓰기, 로그인, 회원가입 페이지를 보여준다.
           '/edit/:id 경로를 새로 추가하여 해당 ID를 가진 게시글을 수정하는 페이지로 라이팅도록 설정한다.'*/}
       <Routes>
-        <Route path="/" element={<PostList />} />
+        <Route path="/" element={<HomeSphere/>} />
+        <Route path="/list" element={<PostList />} />
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/write" element={
           // PostWrite를 PrivateRoute로 감싸서 사용자 인증이 됐을 경우만 접근 가능

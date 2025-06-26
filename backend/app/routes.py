@@ -2,11 +2,16 @@
 
 # 3차
 # status.HTTP_204_NO_CONTENT와 같은 HTTP 상태 코드를 사용하기 위해 FastAPI의 status 모듈을 불러온다.
-from fastapi import APIRouter , Depends, HTTPException, status 
+from fastapi import APIRouter , Depends, HTTPException, status, UploadFile, File, Form 
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from . import models, schemas, database, security
+import shutil
+import os
+import uuid
 
+UPLOAD_DIR = "static/images"  # 파일 경로
+os.makedirs("static/images", exist_ok=True)
 
 router = APIRouter()
 
@@ -38,27 +43,53 @@ def get_post(post_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Post not found")
     # 죄회된 게시글 객체를 그대로 반환
     # FastAPI는 schemas.Post 기준으로 JSON 직렬화해 클라이언트에 응답
-    return post
-
+    image_url = f"/static/images/{post.image_filename}" if post.image_filename else None
+    return {
+        "id": post.id,
+        "title": post.title,
+        "content": post.content,
+        "author": post.author,
+        "user_id": post.user_id,
+        "image_url": image_url
+    }
 
 @router.post("/posts", response_model=schemas.PostResponse)
 def create_post(
-    post: schemas.PostCreate, 
+    title: str = Form(...),
+    content: str = Form(...),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(security.get_current_user) # 인증 사용자
-    ):
-
+    current_user: models.User = Depends(security.get_current_user)
+):
+    # 파일 처리
+    filename = None
+    if file:
+        ext = file.filename.split('.')[-1]
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        save_path = os.path.join(UPLOAD_DIR, filename)
+        
+        with open(save_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    
     db_post = models.Post(
-        title=post.title,
-        content=post.content,
-        author=current_user.username,   # 작성자 이름 자동 저장
-        user_id=current_user.id         # 로그인한 사용자의 ID 저장
-        # **post.dict()
+        title=title,
+        content=content,
+        author=current_user.username,
+        user_id=current_user.id,
+        image_filename=filename  # 여기에 저장
     )
+
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
-    return db_post
+    return {
+        "id": db_post.id,
+        "title": db_post.title,
+        "content": db_post.content,
+        "author": db_post.author,
+        "user_id": db_post.user_id,
+        "image_url": f"/static/{db_post.image_filename}" if db_post.image_filename else None
+    }
 
 
 @router.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -78,29 +109,53 @@ def delete_post(
     db.commit()
     return
 
-
-@router.patch("/posts/{id}", response_model=schemas.PostUpdate)
-def update_post(
+    
+@router.patch("/posts/{id}", response_model=schemas.PostResponse)
+async def update_post(
     id: int,
-    post: schemas.PostUpdate,
+    title: Optional[str] = Form(None),
+    content: Optional[str] = Form(None),
+    author: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),  # 이미지 업로드
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
-    ):
+):
     db_post = db.query(models.Post).filter(models.Post.id == id).first()
     if db_post is None:
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
-    # 작성자 권한 확인
+
     if db_post.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="작성자만 수정할 수 있습니다.")
-    
-    if post.title is not None:
-        db_post.title = post.title
-    if post.content is not None:
-        db_post.content = post.content
-    if post.author is not None:
-        db_post.author = post.author
+
+    # 텍스트 필드 업데이트
+    if title is not None:
+        db_post.title = title
+    if content is not None:
+        db_post.content = content
+    if author is not None:
+        db_post.author = author
+
+    # 이미지 파일 처리
+    if file:
+        # 기존 이미지 삭제
+        if db_post.image_filename:
+            old_path = os.path.join(UPLOAD_DIR, db_post.image_filename)
+            if os.path.exists(old_path):
+                os.remove(old_path)
+
+        # 새 이미지 저장
+        filename = f"post_{id}_{file.filename}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+
+        # 디렉토리 없으면 생성
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        db_post.image_filename = filename
 
     db.commit()
     db.refresh(db_post)
-    return db_post
 
+    return db_post
